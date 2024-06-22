@@ -22,7 +22,8 @@
 
 #include "../../inc/MarlinConfig.h"
 
-#if  BOTH(HAS_MARLINUI_MENU, MSU_MENU)
+//#if  BOTH(HAS_MARLINUI_MENU, MSU_MENU)
+#if  ALL(HAS_MARLINUI_MENU, MSU_MENU)
 
 #include "menu_msu.h"
 #include "../../feature/msu/msu.h"
@@ -33,20 +34,23 @@
 void menu_msu_change_filament() {
   START_MENU();
   BACK_ITEM(MSG_MSU_MENU);
-  LOOP_L_N(i, 5) ACTION_ITEM_N(i, MSG_MSU_FILAMENT_N, []{ msu.tool_change(MenuItemBase::itemIndex); });
+  // LOOP_L_N(i, 5) ACTION_ITEM_N(i, MSG_MSU_FILAMENT_N, []{ msu.tool_change(MenuItemBase::itemIndex); });
+  for (uint8_t i = 0; i < 5 ; ++i) { ACTION_ITEM_N(i, MSG_MSU_FILAMENT_N, []{ msu.tool_change(MenuItemBase::itemIndex); });}
   END_MENU();
 }
 
 void menu_msu_set_idler_position() {
   START_MENU();
   BACK_ITEM(MSG_MSU_MENU);
-  LOOP_L_N(i, 5) ACTION_ITEM_N(i, MSG_MSU_IDLER_POSITION_N, []{ msu.idler_select_filament_nbr(MenuItemBase::itemIndex); });
+  ACTION_ITEM(MSG_MSU_IDLER_PARK_IDLER, []{ msu.idler_select_filament_nbr(-1); });
+  // LOOP_L_N(i, 5) ACTION_ITEM_N(i, MSG_MSU_IDLER_POSITION_N, []{ msu.idler_select_filament_nbr(MenuItemBase::itemIndex); });
+  for (uint8_t i = 0; i < 5 ; ++i) {ACTION_ITEM_N(i, MSG_MSU_IDLER_POSITION_N, []{ msu.idler_select_filament_nbr(MenuItemBase::itemIndex); });}
   END_MENU();
 }
 
 void menu_msu() {
   START_MENU();
-  BACK_ITEM(MSG_MAIN);
+  BACK_ITEM(MSG_MAIN_MENU);
   ACTION_ITEM(MSG_MSU_IDLER_PARK_IDLER, []{ msu.idler_select_filament_nbr(-1); });
   SUBMENU(MSG_MSU_SELECT_FILAMENT, menu_msu_change_filament);
   SUBMENU(MSG_MSU_SET_IDLER_POSITION, menu_msu_set_idler_position);
