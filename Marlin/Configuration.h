@@ -1247,7 +1247,12 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908} // { 160, 160, 800, 932}  //biqu
+#if ENABLED (MSU)
+  #define DISTINCT_E_FACTORS
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908, 150} // { 160, 160, 800, 932}  //biqu MSU
+#else
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908} // { 160, 160, 800, 932}  //biqu
+#endif
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 411,6 } //{ 160, 160, 800, 420 } //stock
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
