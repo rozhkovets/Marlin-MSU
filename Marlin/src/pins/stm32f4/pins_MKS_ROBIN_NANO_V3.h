@@ -33,7 +33,7 @@
 #define BOARD_INFO_NAME "MKS Robin Nano V3"
 
 #define USES_DIAG_JUMPERS
-
+/*
 #ifndef X_CS_PIN
   #define X_CS_PIN                          PD5
 #endif
@@ -49,8 +49,32 @@
 #ifndef E1_CS_PIN
   #define E1_CS_PIN                         PD8
 #endif
-
+//MSU
+#ifndef E2_CS_PIN
+  #define E2_CS_PIN                         PA13
+#endif
 //
+*/
+
+#ifndef X_CS_PIN
+  #define X_CS_PIN                          PD5
+#endif
+#ifndef Y_CS_PIN
+  #define Y_CS_PIN                          PD7
+#endif
+#ifndef Z_CS_PIN
+  #define Z_CS_PIN                          PD4
+#endif
+#ifndef E0_CS_PIN
+  #define E0_CS_PIN                         PD8
+#endif
+#ifndef E1_CS_PIN
+  #define E1_CS_PIN                         PA13
+#endif
+#ifndef E2_CS_PIN
+  #define E2_CS_PIN                         PD9 
+#endif
+
 // SPI pins for TMC2130 stepper drivers
 // This board only supports SW SPI for stepper drivers
 //

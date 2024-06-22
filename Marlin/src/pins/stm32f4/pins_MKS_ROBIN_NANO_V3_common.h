@@ -45,11 +45,36 @@
 //
 //#define DISABLE_DEBUG
 
+/*
+PA8 - msu работает, bl работает
+PE6 - со сбоями , bl не работает
+PA4 - bl не работает
+PE7 - bl не работает
+
+Z1 PC4
+Z PC8
+Y PD2
+X PA15
+T2 PA2 - msu еще хуже чем PE6
+PE9
+UART1 PA10
+UART1 PA9
+PC7
+PC13
+PB13
+PC2
+PC3 - MSU работает
+PC15
+PB14
+PB15
+*/
+
 //
 // Servos
 //
 #define SERVO0_PIN                          PA8   // Enable BLTOUCH
-
+#define SERVO1_PIN                          PC3
+#define SERVO2_PIN                          PC2
 //
 // Limit Switches
 //
@@ -58,6 +83,7 @@
 #define Z_DIAG_PIN                          PC8
 #define E0_DIAG_PIN                         PC4
 #define E1_DIAG_PIN                         PE7
+//#define E2_DIAG_PIN                         PE7
 
 #define X_STOP_PIN                    X_DIAG_PIN
 #define Y_STOP_PIN                    Y_DIAG_PIN
@@ -65,8 +91,17 @@
 #define Z_MAX_PIN                    E0_DIAG_PIN
 
 //
+// Probe enable
+//
+#if ENABLED(PROBE_ENABLE_DISABLE) && !defined(PROBE_ENABLE_PIN)
+  #define PROBE_ENABLE_PIN            SERVO0_PIN
+#endif
+
+//
 // Steppers
 //
+// сток
+/*
 #define X_ENABLE_PIN                        PE4
 #define X_STEP_PIN                          PE3
 #define X_DIR_PIN                           PE2
@@ -87,11 +122,45 @@
 #define E1_STEP_PIN                         PD15
 #define E1_DIR_PIN                          PA1
 
+#define E2_ENABLE_PIN                       PA3
+#define E2_STEP_PIN                         PE1
+#define E2_DIR_PIN                          PB2
+*/
+//E0 -> E2
+//E1 -> E0
+//E2 -> E1
+// моторы E0 и Z2(E1) переставлены местами
+#define X_ENABLE_PIN                        PE4
+#define X_STEP_PIN                          PE3
+#define X_DIR_PIN                           PE2
+
+#define Y_ENABLE_PIN                        PE1 //PE4
+#define Y_STEP_PIN                          PE0
+#define Y_DIR_PIN                           PB9
+
+#define Z_ENABLE_PIN                        PB8
+#define Z_STEP_PIN                          PB5
+#define Z_DIR_PIN                           PB4
+
+#define E0_ENABLE_PIN                       PA3
+#define E0_STEP_PIN                         PD15
+#define E0_DIR_PIN                          PA1
+
+#define E1_ENABLE_PIN                       PA3
+#define E1_STEP_PIN                         PE1
+#define E1_DIR_PIN                          PB2
+
+#define E2_ENABLE_PIN                       PB3
+#define E2_STEP_PIN                         PD6
+#define E2_DIR_PIN                          PD3
+
+
 #if HAS_TMC_UART
   //
   // Software serial
   // No Hardware serial for steppers
-  //
+  // сток
+  /*
   #define X_SERIAL_TX_PIN                   PD5
   #define X_SERIAL_RX_PIN        X_SERIAL_TX_PIN
 
@@ -106,6 +175,28 @@
 
   #define E1_SERIAL_TX_PIN                  PD8
   #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
+
+  #define E2_SERIAL_TX_PIN                  PA13
+  #define E2_SERIAL_RX_PIN      E2_SERIAL_TX_PIN
+  */
+
+  #define X_SERIAL_TX_PIN                   PD5
+  #define X_SERIAL_RX_PIN        X_SERIAL_TX_PIN
+
+  #define Y_SERIAL_TX_PIN                   PD7
+  #define Y_SERIAL_RX_PIN        Y_SERIAL_TX_PIN
+
+  #define Z_SERIAL_TX_PIN                   PD4
+  #define Z_SERIAL_RX_PIN        Z_SERIAL_TX_PIN
+
+  #define E0_SERIAL_TX_PIN                  PD8
+  #define E0_SERIAL_RX_PIN      E0_SERIAL_TX_PIN
+
+  #define E1_SERIAL_TX_PIN                  PA13
+  #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
+  
+  #define E2_SERIAL_TX_PIN                  PD9
+  #define E2_SERIAL_RX_PIN      E2_SERIAL_TX_PIN
 
   // Reduce baud rate to improve software serial reliability
   #ifndef TMC_BAUD_RATE
@@ -150,7 +241,7 @@
 //
 #if HAS_TFT_LVGL_UI
   #define MT_DET_1_PIN                      PA4   // MT_DET
-  #define MT_DET_2_PIN                      PE6
+  //#define MT_DET_2_PIN                      PE6
   #define MT_DET_PIN_STATE                  LOW
 #endif
 
@@ -188,25 +279,27 @@
   #define KILL_PIN_STATE                    HIGH
 #endif
 
-// Random Info
-#define USB_SERIAL              -1  // USB Serial
-#define WIFI_SERIAL              3  // USART3
-#define MKS_WIFI_MODULE_SERIAL   1  // USART1
-#define MKS_WIFI_MODULE_SPI      2  // SPI2
-
 #ifndef SDCARD_CONNECTION
   #define SDCARD_CONNECTION              ONBOARD
 #endif
 
-// MKS WIFI MODULE
+//
+// MKS WiFi Module
+//
 #if ENABLED(MKS_WIFI_MODULE)
   #define WIFI_IO0_PIN                      PC13
   #define WIFI_IO1_PIN                      PC7
   #define WIFI_RESET_PIN                    PE9
+  #define MKS_WIFI_MODULE_SERIAL               1  // USART1
+  #define MKS_WIFI_MODULE_SPI                  2  // SPI2
+#else
+  #define WIFI_SERIAL_PORT                     3  // USART3
 #endif
 
-// MKS TEST
-#if ENABLED(MKS_TEST)
+//
+// MKS Testing for code in lcd/extui/mks_ui
+//
+#if ALL(TFT_LVGL_UI, MKS_TEST)
   #define MKS_TEST_POWER_LOSS_PIN           PA13  // PW_DET
   #define MKS_TEST_PS_ON_PIN                PB2   // PW_OFF
 #endif
