@@ -23,13 +23,17 @@
 /**
  * DWIN Endstops diagnostic page for PRO UI
  * Author: Miguel A. Risco-Castillo (MRISCOC)
- * Version: 1.3.3
- * Date: 2022/10/07
+ * Version: 1.2.2
+ * Date: 2022/02/24
  */
 
 #include "../../../inc/MarlinConfigPre.h"
 
-#if ALL(DWIN_LCD_PROUI, HAS_ESDIAG)
+#if ENABLED(DWIN_LCD_PROUI)
+
+#include "dwin_defines.h"
+
+#if HAS_ESDIAG
 
 #include "endstop_diag.h"
 
@@ -60,7 +64,7 @@ void draw_es_label(FSTR_P const flabel=nullptr) {
 void draw_es_state(const bool is_hit) {
   const uint8_t LM = 130;
   DWINUI::cursor.x = LM;
-  DWIN_Draw_Rectangle(1, HMI_data.PopupBg_Color, LM, DWINUI::cursor.y, LM + 100, DWINUI::cursor.y + 20);
+  DWIN_Draw_Rectangle(1, HMI_data.PopupBg_color, LM, DWINUI::cursor.y, LM + 100, DWINUI::cursor.y + 20);
   is_hit ? DWINUI::Draw_String(RGB(31,31,16), F(STR_ENDSTOP_HIT)) : DWINUI::Draw_String(RGB(16,63,16), F(STR_ENDSTOP_OPEN));
   DWINUI::MoveBy(0, 25);
 }
@@ -72,13 +76,13 @@ void ESDiagClass::Draw() {
   DWINUI::Draw_Button(BTN_Continue, 86, 250);
   DWINUI::cursor.y = 80;
   #define ES_LABEL(S) draw_es_label(F(STR_##S))
-  #if USE_X_MIN
+  #if HAS_X_MIN
     ES_LABEL(X_MIN);
   #endif
-  #if USE_Y_MIN
+  #if HAS_Y_MIN
     ES_LABEL(Y_MIN);
   #endif
-  #if USE_Z_MIN
+  #if HAS_Z_MIN
     ES_LABEL(Z_MIN);
   #endif
   #if HAS_FILAMENT_SENSOR
@@ -90,13 +94,13 @@ void ESDiagClass::Draw() {
 void ESDiagClass::Update() {
   DWINUI::cursor.y = 80;
   #define ES_REPORT(S) draw_es_state(READ(S##_PIN) != S##_ENDSTOP_INVERTING)
-  #if USE_X_MIN
+  #if HAS_X_MIN
     ES_REPORT(X_MIN);
   #endif
-  #if USE_Y_MIN
+  #if HAS_Y_MIN
     ES_REPORT(Y_MIN);
   #endif
-  #if USE_Z_MIN
+  #if HAS_Z_MIN
     ES_REPORT(Z_MIN);
   #endif
   #if HAS_FILAMENT_SENSOR
@@ -105,4 +109,5 @@ void ESDiagClass::Update() {
   DWIN_UpdateLCD();
 }
 
-#endif // DWIN_LCD_PROUI && HAS_ESDIAG
+#endif // HAS_ESDIAG
+#endif // DWIN_LCD_PROUI

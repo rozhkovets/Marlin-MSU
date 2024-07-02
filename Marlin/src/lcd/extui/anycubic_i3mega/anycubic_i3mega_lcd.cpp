@@ -92,7 +92,7 @@ void AnycubicTFTClass::OnSetup() {
   delay_ms(10);
 
   // Init the state of the key pins running on the TFT
-  #if ALL(HAS_MEDIA, HAS_SD_DETECT)
+  #if BOTH(SDSUPPORT, HAS_SD_DETECT)
     SET_INPUT_PULLUP(SD_DETECT_PIN);
   #endif
   #if ENABLED(FILAMENT_RUNOUT_SENSOR)
@@ -174,7 +174,7 @@ void AnycubicTFTClass::OnUserConfirmRequired(const char * const msg) {
     SERIAL_ECHOLNPGM("TFT Serial Debug: OnUserConfirmRequired triggered... ", msg);
   #endif
 
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     /**
      * Need to handle the process of following states
      * "Nozzle Parked"
@@ -378,7 +378,7 @@ void AnycubicTFTClass::HandleSpecialMenu() {
 }
 
 void AnycubicTFTClass::RenderCurrentFileList() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     uint16_t selectedNumber = 0;
     SelectedDirectory[0] = 0;
     SelectedFile[0] = 0;
@@ -402,7 +402,7 @@ void AnycubicTFTClass::RenderCurrentFileList() {
         RenderCurrentFolder(selectedNumber);
     }
     SENDLINE_PGM("END"); // Filelist stop
-  #endif // HAS_MEDIA
+  #endif // SDSUPPORT
 }
 
 void AnycubicTFTClass::RenderSpecialMenu(uint16_t selectedNumber) {
@@ -514,7 +514,7 @@ void AnycubicTFTClass::RenderCurrentFolder(uint16_t selectedNumber) {
 }
 
 void AnycubicTFTClass::OnPrintTimerStarted() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     if (mediaPrintingState == AMPRINTSTATE_PRINTING)
       SENDLINE_DBG_PGM("J04", "TFT Serial Debug: Starting SD Print... J04"); // J04 Starting Print
 
@@ -522,7 +522,7 @@ void AnycubicTFTClass::OnPrintTimerStarted() {
 }
 
 void AnycubicTFTClass::OnPrintTimerPaused() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     if (isPrintingFromMedia()) {
       mediaPrintingState = AMPRINTSTATE_PAUSED;
       mediaPauseState    = AMPAUSESTATE_PARKING;
@@ -531,7 +531,7 @@ void AnycubicTFTClass::OnPrintTimerPaused() {
 }
 
 void AnycubicTFTClass::OnPrintTimerStopped() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     if (mediaPrintingState == AMPRINTSTATE_PRINTING) {
       mediaPrintingState = AMPRINTSTATE_NOT_PRINTING;
       mediaPauseState    = AMPAUSESTATE_NOT_PAUSED;
@@ -606,7 +606,7 @@ void AnycubicTFTClass::GetCommandFromTFT() {
           } break;
 
           case 6: // A6 GET SD CARD PRINTING STATUS
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               if (isPrintingFromMedia()) {
                 SEND_PGM("A6V ");
                 if (isMediaInserted())
@@ -635,28 +635,28 @@ void AnycubicTFTClass::GetCommandFromTFT() {
           break;
 
           case 8: // A8 GET  SD LIST
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               SelectedFile[0] = 0;
               RenderCurrentFileList();
             #endif
             break;
 
           case 9: // A9 pause sd print
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               if (isPrintingFromMedia())
                 PausePrint();
             #endif
             break;
 
           case 10: // A10 resume sd print
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               if (isPrintingFromMediaPaused())
                 ResumePrint();
             #endif
             break;
 
           case 11: // A11 STOP SD PRINT
-            TERN_(HAS_MEDIA, StopPrint());
+            TERN_(SDSUPPORT, StopPrint());
             break;
 
           case 12: // A12 kill
@@ -664,7 +664,7 @@ void AnycubicTFTClass::GetCommandFromTFT() {
             break;
 
           case 13: // A13 SELECTION FILE
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               if (isMediaInserted()) {
                 starpos = (strchr(TFTstrchr_pointer + 4, '*'));
                 if (TFTstrchr_pointer[4] == '/') {
@@ -693,7 +693,7 @@ void AnycubicTFTClass::GetCommandFromTFT() {
             break;
 
           case 14: // A14 START PRINTING
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               if (!isPrinting() && strlen(SelectedFile) > 0)
                 StartPrint();
             #endif
@@ -866,7 +866,7 @@ void AnycubicTFTClass::GetCommandFromTFT() {
             break;
 
           case 26: // A26 refresh SD
-            #if HAS_MEDIA
+            #if ENABLED(SDSUPPORT)
               if (isMediaInserted()) {
                 if (strlen(SelectedDirectory) > 0) {
                   FileList currentFileList;
@@ -922,7 +922,7 @@ void AnycubicTFTClass::GetCommandFromTFT() {
 }
 
 void AnycubicTFTClass::DoSDCardStateCheck() {
-  #if ALL(HAS_MEDIA, HAS_SD_DETECT)
+  #if BOTH(SDSUPPORT, HAS_SD_DETECT)
     bool isInserted = isMediaInserted();
     if (isInserted)
       SENDLINE_DBG_PGM("J00", "TFT Serial Debug: SD card state changed... isInserted");
@@ -952,7 +952,7 @@ void AnycubicTFTClass::DoFilamentRunoutCheck() {
 }
 
 void AnycubicTFTClass::StartPrint() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     if (!isPrinting() && strlen(SelectedFile) > 0) {
       #if ENABLED(ANYCUBIC_LCD_DEBUG)
         SERIAL_ECHOPGM("TFT Serial Debug: About to print file ... ");
@@ -968,7 +968,7 @@ void AnycubicTFTClass::StartPrint() {
 }
 
 void AnycubicTFTClass::PausePrint() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     if (isPrintingFromMedia() && mediaPrintingState != AMPRINTSTATE_STOP_REQUESTED && mediaPauseState == AMPAUSESTATE_NOT_PAUSED) {
       mediaPrintingState = AMPRINTSTATE_PAUSE_REQUESTED;
       mediaPauseState    = AMPAUSESTATE_NOT_PAUSED; // need the userconfirm method to update pause state
@@ -982,7 +982,7 @@ void AnycubicTFTClass::PausePrint() {
 }
 
 void AnycubicTFTClass::ResumePrint() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     #if ENABLED(FILAMENT_RUNOUT_SENSOR)
       if (READ(FIL_RUNOUT1_PIN)) {
         #if ENABLED(ANYCUBIC_LCD_DEBUG)
@@ -1018,7 +1018,7 @@ void AnycubicTFTClass::ResumePrint() {
 }
 
 void AnycubicTFTClass::StopPrint() {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     mediaPrintingState = AMPRINTSTATE_STOP_REQUESTED;
     mediaPauseState    = AMPAUSESTATE_NOT_PAUSED;
     SENDLINE_DBG_PGM("J16", "TFT Serial Debug: SD print stop called... J16");

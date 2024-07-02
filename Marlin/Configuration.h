@@ -35,7 +35,7 @@
  *
  * Advanced settings can be found in Configuration_adv.h
  */
-#define CONFIGURATION_H_VERSION 02010204
+#define CONFIGURATION_H_VERSION 02010200
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -88,7 +88,7 @@
 
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V3_1  // V3_1 т.к. она имеет такой же проц как и сток плата 3.2 STM32F407VET6, у v3 STM32F407VG																																																						 
+  #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V3_1  // V3_1 т.к. она имеет такой же проц как и сток плата 3.2 STM32F407VET6, у v3 STM32F407VG
 #endif
 
 /**
@@ -136,7 +136,7 @@
 //#define BLUETOOTH
 
 // Name displayed in the LCD "Ready" message and Info menu
-//#define CUSTOM_MACHINE_NAME "Reborn 2 MSU"
+#define CUSTOM_MACHINE_NAME "Reborn 2 MSU"
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like https://www.uuidgenerator.net/version4
@@ -413,47 +413,24 @@
 
   #define MSU_SERVO_IDLER_NBR 1 //define the servo motor number
   #define MSU_SERVO_OFFSET 0 //defines the offset in degrees for the idler, this can be used to fine tune idler alignment
-  /*
-     углы для позиций    PARKING, T0, T1, T2, T3, T4
-  */
-  #define MSU_BEARING_ANGLES { 0, 26, 55, 84, 112, 140 } // defines the angle from on ball-bearing to the next on the idler
-
-
-  #define MSU_SPEED 20 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
-  
+  #define MSU_BEARING_ANGLES 26 //defines the angle from on ball-bearing to the next on the idler
+  #define MSU_SPEED 25 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
   #define MSU_EXTRUDER_NBR 1 //define the MSU extruder motor number (as setup in your board pins file)
-  #define MSU_ORIGINAL_EXTRUDER_SPEED 4  // скорость загрузки и выгрузки основного экструдера, мм/сек
-  #define MSU_ORIGINAL_EXTRUDER_PURGE_LENGTH 0 //расстояние прочистки экструдера
-  #define MSU_GEAR_LENGTH 20 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
-  #define MSU_BOWDEN_TUBE_LENGTH 120 //length between MSU and the nozzle or from the MSU to the extruder gears (for direct drive setups)
+  #define MSU_PARKING_POSITION 270 //define angle of the servo for the parking position
 
-  #define MSU_WITH_CUTTER
-  #if ENABLED(MSU_WITH_CUTTER)
-    #define MSU_SERVO_CUTTER_NBR 2 //define the servo motor number
-    #define MSU_SERVO_CUTTER_CUT_ANGL 40 // угол позиции резки
-    #define MSU_SERVO_CUTTER_PARK_ANGL 90  //угол парковки резака
-    #define MSU_SERVO_CUTTER_TRY 3  // количество попыток резки
-    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 0  //сколько мм извлечь перед резкой //max 20 мм biqu h2 v2s // увеличение грозит застреванием в шестернях
-  #endif
-    
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 45 //длина загрузка двумя экструдерами
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 12 // MSU_SPEED // скорость загрузки двумя экструдерами
   #endif
 
   #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
     #define MSU_EXTRUDER_STEPS_PER_MM 120 //steps per mm of the MSU, should not require any tuning. Necessary since we are using a single driver with motors that potentially have different steps per mm
   #endif
 
-  #define MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE //парковка печатной головы перед сменой филамента
-  #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
-    //#define MSU_PARK_EXTRUDER_POS { (X_MIN_POS), (Y_MIN_POS + 5), 50 } // кординаты парковки печатной головы
-    #define MSU_PARK_EXTRUDER_POS { 0, 0} // XY кординаты парковки печатной головы
-    #define MSU_PARK_EXTRUDER_FR 150  //XY скорость парковки печатной головы, мм/сек
-    #define MSU_PARK_EXTRUDER_MOVE 0 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
-  #endif
+  #define MSU_BOWDEN_TUBE_LENGTH 600 //length between MSU and the nozzle or from the MSU to the extruder gears (for direct drive setups)
+  #define MSU_GEAR_LENGTH 40 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
 #endif
+
+
 
 // @section psu control
 
@@ -914,7 +891,7 @@
  * Note: For Bowden Extruders make this large enough to allow load/unload.
  */
 #define PREVENT_LENGTHY_EXTRUDE
-#define EXTRUDE_MAXLENGTH 1000
+#define EXTRUDE_MAXLENGTH 500
 
 //===========================================================================
 //======================== Thermal Runaway Protection =======================
@@ -1131,7 +1108,7 @@
 //#define USE_WMIN_PLUG
 #define USE_XMAX_PLUG
 //#define USE_YMAX_PLUG
-//#define USE_ZMAX_PLUG
+#define USE_ZMAX_PLUG
 //#define USE_IMAX_PLUG
 //#define USE_JMAX_PLUG
 //#define USE_KMAX_PLUG
@@ -1190,7 +1167,7 @@
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-#define X_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
+#define X_MIN_ENDSTOP_INVERTING true  // Set to true to invert the logic of the endstop.
 #define Y_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #define Z_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #define I_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
@@ -1201,7 +1178,7 @@
 #define W_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define X_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #define Y_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-#define Z_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
+#define Z_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #define I_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define J_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define K_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
@@ -1249,23 +1226,15 @@
  * following movement settings. If fewer factors are given than the
  * total number of extruders, the last value applies to the rest.
  */
-//#define DISTINCT_E_FACTORS
+#define DISTINCT_E_FACTORS
 
 /**
  * Default Axis Steps Per Unit (linear=steps/mm, rotational=steps/°)
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908, 150} // { 160, 160, 800, 932}  //biqu msu
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 411,6 } //{ 160, 160, 800, 420 } //stock
-
-//MSU
-#if ENABLED (MSU)
-  #define DISTINCT_E_FACTORS
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908, 150} // { 160, 160, 800, 932}  //biqu MSU
-#else
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908} // { 160, 160, 800, 932}  //biqu
-#endif
-//MSU
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
@@ -1300,9 +1269,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_ACCELERATION          3000 // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  3000 // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   3000 // X, Y, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk limits (mm/s)
@@ -1389,7 +1358,7 @@
  *    - Normally-closed (NC) also connect to GND.
  *    - Normally-open (NO) also connect to 5V.
  */
-#define Z_MIN_PROBE_PIN PE7
+#define Z_MIN_PROBE_PIN PE7 
 
 /**
  * Probe Type
@@ -1665,7 +1634,7 @@
 #define Z_PROBE_LOW_POINT          -10 // (mm) Farthest distance below the trigger-point to go before stopping
 
 // For M851 give a range for adjusting the Z probe offset
-#define Z_PROBE_OFFSET_RANGE_MIN -50
+#define Z_PROBE_OFFSET_RANGE_MIN -20
 #define Z_PROBE_OFFSET_RANGE_MAX 20
 
 // Enable the M48 repeatability test to test probe accuracy
@@ -1778,7 +1747,7 @@
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
-#define X_HOME_DIR 1// -1 //из-за переноса концевика X на X_MAX
+#define X_HOME_DIR 1 // -1 //из-за переноса концевика X на X_MAX
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR -1
 //#define I_HOME_DIR -1
@@ -2011,7 +1980,7 @@
  * Turn on with the command 'M111 S32'.
  * NOTE: Requires a lot of flash!
  */
-//#define DEBUG_LEVELING_FEATURE
+#define DEBUG_LEVELING_FEATURE
 
 #if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL, PROBE_MANUALLY)
   // Set a height for the start of manual adjustment
@@ -2056,7 +2025,7 @@
 #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_X 10
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
@@ -2066,13 +2035,13 @@
 
     // Beyond the probed grid, continue the implied tilt?
     // Default is to maintain the height of the nearest edge.
-    //#define EXTRAPOLATE_BEYOND_GRID
+    #define EXTRAPOLATE_BEYOND_GRID
 
     //
     // Subdivision of the grid by Catmull-Rom method.
     // Synthesizes intermediate points to produce a more detailed mesh.
     //
-    //#define ABL_BILINEAR_SUBDIVISION
+    #define ABL_BILINEAR_SUBDIVISION
     #if ENABLED(ABL_BILINEAR_SUBDIVISION)
       // Number of subdivisions between probe points
       #define BILINEAR_SUBDIVISIONS 3
@@ -2132,8 +2101,7 @@
 #define LCD_BED_TRAMMING
 
 #if ENABLED(LCD_BED_TRAMMING)
-  #define BED_TRAMMING_INSET_LFRB { 27, 52, 27, 44 } // (mm) Left, Front, Right, Back insets
-  #define BED_TRAMMING_HEIGHT      0.5        // (mm) Z height of nozzle at tramming points
+  #define BED_TRAMMING_INSET_LFRB { 27, 52, 27, 44 } // (mm) Left, Front, Right, Back insets#define BED_TRAMMING_HEIGHT      1.0        // (mm) Z height of nozzle at tramming points
   #define BED_TRAMMING_Z_HOP       10.0        // (mm) Z height of nozzle between tramming points
   //#define BED_TRAMMING_INCLUDE_CENTER       // Move to the center after the last corner
   #define BED_TRAMMING_USE_PROBE
@@ -2278,8 +2246,8 @@
 #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save flash.
 #define EEPROM_BOOT_SILENT    // Keep M503 quiet and only give errors during first load
 #if ENABLED(EEPROM_SETTINGS)
-  //#define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
-  #define EEPROM_INIT_NOW   // Init EEPROM on first boot after a new build.
+  #define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
+  //#define EEPROM_INIT_NOW   // Init EEPROM on first boot after a new build.
 #endif
 
 // @section host
@@ -3331,7 +3299,7 @@
 // However, control resolution will be halved for each increment;
 // at zero value, there are 128 effective control positions.
 // :[0,1,2,3,4,5,6,7]
-#define SOFT_PWM_SCALE 1
+//#define SOFT_PWM_SCALE 2
 
 // If SOFT_PWM_SCALE is set to a value higher than 0, dithering can
 // be used to mitigate the associated resolution loss. If enabled,
@@ -3404,7 +3372,7 @@
 // Support for Adafruit NeoPixel LED driver
 #define NEOPIXEL_LED
 #if ENABLED(NEOPIXEL_LED)
-  #define NEOPIXEL_TYPE          NEO_RGB // NEO_GRBW, NEO_RGBW, NEO_GRB, NEO_RBG, etc.
+  #define NEOPIXEL_TYPE          NEO_RGB  // NEO_GRBW, NEO_RGBW, NEO_GRB, NEO_RBG, etc.
                                           // See https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h
   //#define NEOPIXEL_PIN                4 // LED driving pin
   //#define NEOPIXEL2_TYPE  NEOPIXEL_TYPE

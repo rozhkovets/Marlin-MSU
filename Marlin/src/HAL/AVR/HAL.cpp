@@ -63,23 +63,18 @@ void save_reset_reason() {
 
 void MarlinHAL::init() {
   // Init Servo Pins
+  #define INIT_SERVO(N) OUT_WRITE(SERVO##N##_PIN, LOW)
   #if HAS_SERVO_0
-    OUT_WRITE(SERVO0_PIN, LOW);
+    INIT_SERVO(0);
   #endif
   #if HAS_SERVO_1
-    OUT_WRITE(SERVO1_PIN, LOW);
+    INIT_SERVO(1);
   #endif
   #if HAS_SERVO_2
-    OUT_WRITE(SERVO2_PIN, LOW);
+    INIT_SERVO(2);
   #endif
   #if HAS_SERVO_3
-    OUT_WRITE(SERVO3_PIN, LOW);
-  #endif
-  #if HAS_SERVO_4
-    OUT_WRITE(SERVO4_PIN, LOW);
-  #endif
-  #if HAS_SERVO_5
-    OUT_WRITE(SERVO5_PIN, LOW);
+    INIT_SERVO(3);
   #endif
 
   init_pwm_timers();   // Init user timers to default frequency - 1000HZ
@@ -150,12 +145,12 @@ void MarlinHAL::reboot() {
 // Free Memory Accessor
 // ------------------------
 
-#if HAS_MEDIA
+#if ENABLED(SDSUPPORT)
 
   #include "../../sd/SdFatUtil.h"
   int freeMemory() { return SdFatUtil::FreeRam(); }
 
-#else // !HAS_MEDIA
+#else // !SDSUPPORT
 
   extern "C" {
     extern char __bss_end;
@@ -172,6 +167,6 @@ void MarlinHAL::reboot() {
     }
   }
 
-#endif // !HAS_MEDIA
+#endif // !SDSUPPORT
 
 #endif // __AVR__

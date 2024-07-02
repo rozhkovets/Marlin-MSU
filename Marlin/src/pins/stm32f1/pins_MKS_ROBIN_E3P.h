@@ -52,15 +52,15 @@
 //#define FLASH_EEPROM_EMULATION
 //#define SDCARD_EEPROM_EMULATION
 
-#if ANY(NO_EEPROM_SELECTED, I2C_EEPROM)
+#if EITHER(NO_EEPROM_SELECTED, I2C_EEPROM)
   #define I2C_EEPROM                              // EEPROM on I2C-0
   #define MARLIN_EEPROM_SIZE              0x1000  // 4K
 #endif
 
 //
-// SPI
+// Note: MKS Robin board is using SPI2 interface.
 //
-#define SPI_DEVICE                             2  // Maple
+#define SPI_DEVICE                             2
 
 //
 // Servos
@@ -112,16 +112,18 @@
 #endif
 
 //
-// SPI pins for TMC2130 stepper drivers
+// Software SPI pins for TMC2130 stepper drivers
 //
-#ifndef TMC_SPI_MOSI
-  #define TMC_SPI_MOSI                      PD14
-#endif
-#ifndef TMC_SPI_MISO
-  #define TMC_SPI_MISO                      PD1
-#endif
-#ifndef TMC_SPI_SCK
-  #define TMC_SPI_SCK                       PD0
+#if ENABLED(TMC_USE_SW_SPI)
+  #ifndef TMC_SW_MOSI
+    #define TMC_SW_MOSI                     PD14
+  #endif
+  #ifndef TMC_SW_MISO
+    #define TMC_SW_MISO                     PD1
+  #endif
+  #ifndef TMC_SW_SCK
+    #define TMC_SW_SCK                      PD0
+  #endif
 #endif
 
 #if HAS_TMC_UART
@@ -156,10 +158,7 @@
   #define E0_SERIAL_RX_PIN                  PD9
 
   // Reduce baud rate to improve software serial reliability
-  #ifndef TMC_BAUD_RATE
-    #define TMC_BAUD_RATE                  19200
-  #endif
-
+  #define TMC_BAUD_RATE                    19200
 #endif // HAS_TMC_UART
 
 //
@@ -174,7 +173,7 @@
 #define HEATER_0_PIN                        PC3   // HEATER1
 #define HEATER_BED_PIN                      PA0   // HOT BED
 
-#define FAN0_PIN                            PB1   // FAN
+#define FAN_PIN                             PB1   // FAN
 
 //
 // Misc. Functions
@@ -242,7 +241,7 @@
 #endif
 
 #if SD_CONNECTION_IS(ONBOARD)
-  #define ONBOARD_SDIO
+  #define SDIO_SUPPORT
   #define SDIO_CLOCK                     4500000  // 4.5 MHz
   #define SD_DETECT_PIN                     PD12
   #define ONBOARD_SD_CS_PIN                 PC11
@@ -264,17 +263,6 @@
  * If the screen stays white, disable 'LCD_RESET_PIN'
  * to let the bootloader init the screen.
  */
-
-#if ENABLED(TFT_CLASSIC_UI)
-  // Emulated DOGM SPI
-  #define LCD_PINS_EN                EXP1_03_PIN
-  #define LCD_PINS_RS                EXP1_04_PIN
-  #define BTN_ENC                    EXP1_02_PIN
-  #define BTN_EN1                    EXP2_03_PIN
-  #define BTN_EN2                    EXP2_05_PIN
-#elif ENABLED(TFT_COLOR_UI)
-  #define TFT_BUFFER_WORDS                 14400
-#endif
 
 #if HAS_SPI_TFT
 
@@ -306,16 +294,27 @@
 
   #define LCD_USE_DMA_SPI
 
-#elif HAS_WIRED_LCD
+#endif
 
-  #define BEEPER_PIN                 EXP1_01_PIN
-
+#if ENABLED(TFT_CLASSIC_UI)
+  // Emulated DOGM SPI
+  #define LCD_PINS_ENABLE            EXP1_03_PIN
+  #define LCD_PINS_RS                EXP1_04_PIN
   #define BTN_ENC                    EXP1_02_PIN
   #define BTN_EN1                    EXP2_03_PIN
   #define BTN_EN2                    EXP2_05_PIN
+#elif ENABLED(TFT_COLOR_UI)
+  #define TFT_BUFFER_SIZE                  14400
+#endif
 
-  #define LCD_PINS_EN                EXP1_03_PIN
+#if HAS_WIRED_LCD && !HAS_SPI_TFT
+  #define BEEPER_PIN                 EXP1_01_PIN
+  #define BTN_ENC                    EXP1_02_PIN
+  #define LCD_PINS_ENABLE            EXP1_03_PIN
   #define LCD_PINS_RS                EXP1_04_PIN
+  #define BTN_EN1                    EXP2_03_PIN
+  #define BTN_EN2                    EXP2_05_PIN
+  #define LCD_BACKLIGHT_PIN                 -1
 
   #if ENABLED(MKS_MINI_12864)
 
@@ -356,7 +355,7 @@
     #endif
     //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
 
-  #else // !FYSETC_MINI_12864_2_1
+  #else                                           // !MKS_MINI_12864
 
     #define LCD_PINS_D4              EXP1_05_PIN
     #if IS_ULTIPANEL
@@ -374,21 +373,21 @@
     #define BOARD_ST7920_DELAY_2             125
     #define BOARD_ST7920_DELAY_3             125
 
-  #endif // !FYSETC_MINI_12864_2_1
+  #endif // !MKS_MINI_12864
 
 #endif // HAS_WIRED_LCD && !HAS_SPI_TFT
-
-#ifndef BEEPER_PIN
-  #define BEEPER_PIN                 EXP1_01_PIN
-#endif
 
 #define SPI_FLASH
 #if ENABLED(SPI_FLASH)
   #define SPI_FLASH_SIZE               0x1000000  // 16MB
   #define SPI_FLASH_CS_PIN                  PB12
-  #define SPI_FLASH_SCK_PIN                 PB13
-  #define SPI_FLASH_MISO_PIN                PB14
   #define SPI_FLASH_MOSI_PIN                PB15
+  #define SPI_FLASH_MISO_PIN                PB14
+  #define SPI_FLASH_SCK_PIN                 PB13
+#endif
+
+#ifndef BEEPER_PIN
+  #define BEEPER_PIN                 EXP1_01_PIN
 #endif
 
 #if ENABLED(SPEAKER) && BEEPER_PIN == PC5

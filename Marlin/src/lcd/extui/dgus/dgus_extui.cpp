@@ -48,11 +48,11 @@ namespace ExtUI {
     while (!ScreenHandler.loop());  // Wait while anything is left to be sent
   }
 
-  void onMediaInserted() { TERN_(HAS_MEDIA, ScreenHandler.SDCardInserted()); }
-  void onMediaError()    { TERN_(HAS_MEDIA, ScreenHandler.SDCardError()); }
-  void onMediaRemoved()  { TERN_(HAS_MEDIA, ScreenHandler.SDCardRemoved()); }
+  void onMediaInserted() { TERN_(SDSUPPORT, ScreenHandler.SDCardInserted()); }
+  void onMediaError()    { TERN_(SDSUPPORT, ScreenHandler.SDCardError()); }
+  void onMediaRemoved()  { TERN_(SDSUPPORT, ScreenHandler.SDCardRemoved()); }
 
-  void onPlayTone(const uint16_t frequency, const uint16_t duration/*=0*/) {}
+  void onPlayTone(const uint16_t frequency, const uint16_t duration) {}
   void onPrintTimerStarted() {}
   void onPrintTimerPaused() {}
   void onPrintTimerStopped() {}
@@ -102,22 +102,20 @@ namespace ExtUI {
     // Called after loading or resetting stored settings
   }
 
-  void onSettingsStored(const bool success) {
+  void onSettingsStored(bool success) {
     // Called after the entire EEPROM has been written,
     // whether successful or not.
   }
 
-  void onSettingsLoaded(const bool success) {
+  void onSettingsLoaded(bool success) {
     // Called after the entire EEPROM has been read,
     // whether successful or not.
   }
 
-  #if HAS_LEVELING
+  #if HAS_MESH
     void onLevelingStart() {}
     void onLevelingDone() {}
-  #endif
 
-  #if HAS_MESH
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
       // Called when any mesh points are updated
     }
@@ -128,12 +126,6 @@ namespace ExtUI {
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
-    void onSetPowerLoss(const bool onoff) {
-      // Called when power-loss is enabled/disabled
-    }
-    void onPowerLoss() {
-      // Called when power-loss state is detected
-    }
     void onPowerLossResume() {
       // Called on resume from power-loss
       IF_DISABLED(DGUS_LCD_UI_MKS, ScreenHandler.GotoScreen(DGUSLCD_SCREEN_POWER_LOSS));

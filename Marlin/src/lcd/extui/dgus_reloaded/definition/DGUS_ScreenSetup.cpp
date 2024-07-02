@@ -35,7 +35,7 @@
   .setup_fn = SETUP }
 
 const struct DGUS_ScreenSetup screen_setup_list[] PROGMEM = {
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     SETUP_HELPER(DGUS_Screen::PRINT,            &DGUSSetupHandler::Print),
   #endif
   SETUP_HELPER(DGUS_Screen::PRINT_STATUS,       &DGUSSetupHandler::PrintStatus),

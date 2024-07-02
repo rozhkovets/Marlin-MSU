@@ -1,9 +1,7 @@
 /**
  * Marlin 3D Printer Firmware
  * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,15 +140,15 @@ typedef Servo hal_servo_t;
   #endif
   #define LCD_SERIAL lcdSerial
   #if HAS_DGUS_LCD
-    #define LCD_SERIAL_TX_BUFFER_FREE() LCD_SERIAL.get_tx_buffer_free()
+    #define SERIAL_GET_TX_BUFFER_FREE() LCD_SERIAL.get_tx_buffer_free()
   #endif
 #endif
 
 //
 // ADC
 //
-#define HAL_ADC_VREF_MV   5000
-#define HAL_ADC_RESOLUTION  10
+#define HAL_ADC_VREF        5.0
+#define HAL_ADC_RESOLUTION 10
 
 //
 // Pin Mapping for M42, M43, M226

@@ -55,7 +55,7 @@
   #include "../../feature/spindle_laser.h"
 #endif
 
-#if ANY(HAS_COOLER, LASER_COOLANT_FLOW_METER)
+#if EITHER(HAS_COOLER, LASER_COOLANT_FLOW_METER)
   #include "../../feature/cooler.h"
 #endif
 
@@ -67,7 +67,7 @@
   #include "../../feature/power_monitor.h"
 #endif
 
-#if HAS_MEDIA
+#if ENABLED(SDSUPPORT)
   #include "../../sd/cardreader.h"
 #endif
 
@@ -96,10 +96,9 @@
     DRAWBIT_HOTEND,
     DRAWBIT_BED = HOTENDS,
     DRAWBIT_CHAMBER,
-    DRAWBIT_CUTTER,
-    DRAWBIT_COUNT
+    DRAWBIT_CUTTER
   };
-  bits_t(DRAWBIT_COUNT) draw_bits;
+  IF<(DRAWBIT_CUTTER > 7), uint16_t, uint8_t>::type draw_bits;
 #endif
 
 #if ANIM_HOTEND
@@ -127,7 +126,7 @@
   #define MAX_HOTEND_DRAW _MIN(HOTENDS, ((LCD_PIXEL_WIDTH - (STATUS_LOGO_BYTEWIDTH + STATUS_FAN_BYTEWIDTH) * 8) / (STATUS_HEATERS_XSPACE)))
 #endif
 
-#if ANY(DO_DRAW_BED, DO_DRAW_HOTENDS)
+#if EITHER(DO_DRAW_BED, DO_DRAW_HOTENDS)
   #define STATUS_HEATERS_BOT (STATUS_HEATERS_Y + STATUS_HEATERS_HEIGHT - 1)
 #endif
 
@@ -235,8 +234,13 @@ FORCE_INLINE void _draw_centered_temp(const celsius_t temp, const uint8_t tx, co
     const celsius_t temp = thermalManager.wholeDegHotend(heater_id),
                   target = thermalManager.degTargetHotend(heater_id);
 
-    #define STATIC_HOTEND DISABLED(STATUS_HOTEND_ANIM)
-    #define HOTEND_DOT TERN(STATUS_HOTEND_ANIM, false, isHeat)
+    #if DISABLED(STATUS_HOTEND_ANIM)
+      #define STATIC_HOTEND true
+      #define HOTEND_DOT    isHeat
+    #else
+      #define STATIC_HOTEND false
+      #define HOTEND_DOT    false
+    #endif
 
     #if ENABLED(STATUS_HOTEND_NUMBERLESS)
       #define OFF_BMP(N) TERN(STATUS_HOTEND_INVERTED, status_hotend_b_bmp, status_hotend_a_bmp)
@@ -329,8 +333,13 @@ FORCE_INLINE void _draw_centered_temp(const celsius_t temp, const uint8_t tx, co
       const bool isHeat = BED_ALT();
     #endif
 
-    #define STATIC_BED DISABLED(STATUS_BED_ANIM)
-    #define BED_DOT TERN(STATUS_BED_ANIM, false, isHeat)
+    #if DISABLED(STATUS_BED_ANIM)
+      #define STATIC_BED    true
+      #define BED_DOT       isHeat
+    #else
+      #define STATIC_BED    false
+      #define BED_DOT       false
+    #endif
 
     if (PAGE_CONTAINS(STATUS_HEATERS_Y, STATUS_HEATERS_BOT)) {
 
@@ -463,23 +472,19 @@ FORCE_INLINE void _draw_axis_value(const AxisEnum axis, const char *value, const
   #if ENABLED(SHOW_REMAINING_TIME)
     void MarlinUI::drawRemain() {
       if (printJobOngoing() && get_remaining_time() != 0)
-        prepare_time_string(get_remaining_time(), 'R');
-    }
+        prepare_time_string(get_remaining_time(), 'R'); }
   #endif
   #if ENABLED(SHOW_INTERACTION_TIME)
     void MarlinUI::drawInter() {
       if (printingIsActive() && interaction_time)
-        prepare_time_string(interaction_time, 'C');
-    }
+        prepare_time_string(interaction_time, 'C'); }
   #endif
   #if ENABLED(SHOW_ELAPSED_TIME)
     void MarlinUI::drawElapsed() {
       if (printJobOngoing())
-        prepare_time_string(print_job_timer.duration(), 'E');
-    }
+        prepare_time_string(print_job_timer.duration(), 'E'); }
   #endif
-
-#endif // HAS_EXTRA_PROGRESS
+#endif // HAS_PRINT_PROGRESS
 
 /**
  * Draw the Status Screen for a 128x64 DOGM (U8glib) display.
@@ -583,7 +588,7 @@ void MarlinUI::draw_status_screen() {
 
   #if DO_DRAW_BED && DISABLED(STATUS_COMBINE_HEATERS)
     #if ANIM_BED
-      #if ALL(HAS_LEVELING, STATUS_ALT_BED_BITMAP)
+      #if BOTH(HAS_LEVELING, STATUS_ALT_BED_BITMAP)
         #define BED_BITMAP(S) ((S) \
           ? (planner.leveling_active ? status_bed_leveled_on_bmp : status_bed_on_bmp) \
           : (planner.leveling_active ? status_bed_leveled_bmp : status_bed_bmp))
@@ -643,7 +648,7 @@ void MarlinUI::draw_status_screen() {
   if (PAGE_UNDER(6 + 1 + 12 + 1 + 6 + 1)) {
     // Extruders
     #if DO_DRAW_HOTENDS
-      for (uint8_t e = 0; e < MAX_HOTEND_DRAW; ++e) _draw_hotend_status((heater_id_t)e, blink);
+      LOOP_L_N(e, MAX_HOTEND_DRAW) _draw_hotend_status((heater_id_t)e, blink);
     #endif
 
     // Laser / Spindle
@@ -718,7 +723,7 @@ void MarlinUI::draw_status_screen() {
     #endif
   }
 
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     //
     // SD Card Symbol
     //
@@ -732,7 +737,7 @@ void MarlinUI::draw_status_screen() {
       // Corner pixel
       u8g.drawPixel(50, 43);         // 43 (or 42)
     }
-  #endif // HAS_MEDIA
+  #endif // SDSUPPORT
 
   #if HAS_PRINT_PROGRESS
     // Progress bar frame
@@ -754,7 +759,7 @@ void MarlinUI::draw_status_screen() {
   // XYZ Coordinates
   //
 
-  #if ANY(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
+  #if EITHER(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
     #define XYZ_FRAME_TOP 29
     #define XYZ_FRAME_HEIGHT INFO_FONT_ASCENT + 3
   #else
@@ -821,7 +826,9 @@ void MarlinUI::draw_status_screen() {
 
       #endif
 
-      TERN_(HAS_Z_AXIS, _draw_axis_value(Z_AXIS, zstring, blink));
+      #if HAS_Z_AXIS
+        _draw_axis_value(Z_AXIS, zstring, blink);
+      #endif
 
       #if NONE(XYZ_NO_FRAME, XYZ_HOLLOW_FRAME)
         u8g.setColorIndex(1); // black on white
@@ -845,7 +852,7 @@ void MarlinUI::draw_status_screen() {
     //
     // Filament sensor display if SD is disabled
     //
-    #if ENABLED(FILAMENT_LCD_DISPLAY) && !HAS_MEDIA
+    #if ENABLED(FILAMENT_LCD_DISPLAY) && DISABLED(SDSUPPORT)
       lcd_put_u8str(56, EXTRAS_2_BASELINE, wstring);
       lcd_put_u8str(102, EXTRAS_2_BASELINE, mstring);
       lcd_put_u8str(F("%"));
@@ -861,7 +868,7 @@ void MarlinUI::draw_status_screen() {
   if (PAGE_CONTAINS(STATUS_BASELINE - INFO_FONT_ASCENT, STATUS_BASELINE + INFO_FONT_DESCENT)) {
     lcd_moveto(0, STATUS_BASELINE);
 
-    #if ALL(FILAMENT_LCD_DISPLAY, HAS_MEDIA)
+    #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
       // Alternate Status message and Filament display
       if (ELAPSED(millis(), next_filament_display)) {
         lcd_put_u8str(F(LCD_STR_FILAM_DIA));

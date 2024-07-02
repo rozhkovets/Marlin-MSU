@@ -20,8 +20,6 @@
  *
  */
 
-#ifdef __STM32F1__
-
 #include "../../../inc/MarlinConfig.h"
 
 #if HAS_FSMC_TFT
@@ -262,5 +260,3 @@ void TFT_FSMC::Transmit(uint32_t MemoryIncrease, uint16_t *Data, uint16_t Count)
 }
 
 #endif // HAS_FSMC_TFT
-
-#endif // __STM32F1__

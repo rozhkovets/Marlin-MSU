@@ -40,7 +40,7 @@
   #include "../../../../feature/powerloss.h"
 #endif
 
-#if HAS_MEDIA
+#if ENABLED(SDSUPPORT)
 
   extern ExtUI::FileList filelist;
 
@@ -124,7 +124,7 @@
     ) GotoScreen(DGUSLCD_SCREEN_MAIN);
   }
 
-#endif // HAS_MEDIA
+#endif // SDSUPPORT
 
 void DGUSScreenHandler::ScreenChangeHook(DGUS_VP_Variable &var, void *val_ptr) {
   uint8_t *tmp = (uint8_t*)val_ptr;
@@ -190,7 +190,7 @@ void DGUSScreenHandler::HandleManualMove(DGUS_VP_Variable &var, void *val_ptr) {
 
   if (!movevalue) {
     // homing
-    DEBUG_ECHOPGM(" homing ", C(axiscode));
+    DEBUG_ECHOPGM(" homing ", AS_CHAR(axiscode));
     char buf[6] = "G28 X";
     buf[4] = axiscode;
     //DEBUG_ECHOPGM(" ", buf);
@@ -201,7 +201,7 @@ void DGUSScreenHandler::HandleManualMove(DGUS_VP_Variable &var, void *val_ptr) {
   }
   else {
     // movement
-    DEBUG_ECHOPGM(" move ", C(axiscode));
+    DEBUG_ECHOPGM(" move ", AS_CHAR(axiscode));
     bool old_relative_mode = relative_mode;
     if (!relative_mode) {
       //DEBUG_ECHOPGM(" G91");
@@ -237,7 +237,7 @@ void DGUSScreenHandler::HandleManualMove(DGUS_VP_Variable &var, void *val_ptr) {
   return;
 
   cannotmove:
-    DEBUG_ECHOLNPGM(" cannot move ", C(axiscode));
+    DEBUG_ECHOLNPGM(" cannot move ", AS_CHAR(axiscode));
     return;
 }
 

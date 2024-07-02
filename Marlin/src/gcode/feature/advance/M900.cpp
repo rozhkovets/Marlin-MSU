@@ -120,7 +120,8 @@ void GcodeSuite::M900() {
         EXTRUDER_LOOP() {
           const bool slot = TEST(lin_adv_slot, e);
           SERIAL_ECHOLNPGM("Advance T", e, " S", slot, " K", planner.extruder_advance_K[e],
-                           "(S", !slot, " K", other_extruder_advance_K[e], ")");
+                            "(S", !slot, " K", other_extruder_advance_K[e], ")");
+          SERIAL_EOL();
         }
       #endif
 

@@ -52,7 +52,7 @@ bool DGUSScreenHandler::ScreenComplete;
 
 void (*DGUSScreenHandler::confirm_action_cb)() = nullptr;
 
-#if HAS_MEDIA
+#if ENABLED(SDSUPPORT)
   int16_t DGUSScreenHandler::top_file = 0,
           DGUSScreenHandler::file_to_print = 0;
   ExtUI::FileList filelist;
@@ -275,7 +275,7 @@ void DGUSScreenHandler::DGUSLCD_SendHeaterStatusToDisplay(DGUS_VP_Variable &var)
 
 #endif
 
-#if HAS_MEDIA
+#if ENABLED(SDSUPPORT)
 
   void DGUSScreenHandler::ScreenChangeHookIfSD(DGUS_VP_Variable &var, void *val_ptr) {
     // default action executed when there is a SD card, but not printing
@@ -347,7 +347,7 @@ void DGUSScreenHandler::DGUSLCD_SendHeaterStatusToDisplay(DGUS_VP_Variable &var)
     GotoScreen(DGUSLCD_SCREEN_POPUP);
   }
 
-#endif // HAS_MEDIA
+#endif // SDSUPPORT
 
 void DGUSScreenHandler::ScreenConfirmedOK(DGUS_VP_Variable &var, void *val_ptr) {
   DGUS_VP_Variable ramcopy;

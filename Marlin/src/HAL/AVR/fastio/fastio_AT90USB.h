@@ -31,11 +31,14 @@
 
 #include "../fastio.h"
 
+// change for your board
+#define DEBUG_LED   DIO31 /* led D5 red */
+
 // SPI
-#define SS          20  //  8
-#define SCK         21  //  9
-#define MOSI        22  // 10
-#define MISO        23  // 11
+#define SCK         DIO21  //  9
+#define MISO        DIO23  // 11
+#define MOSI        DIO22  // 10
+#define SS          DIO20  //  8
 
 // Digital I/O
 
@@ -675,6 +678,7 @@
 #define PF7_WPORT   PORTF
 #define PF7_PWM     0
 #define PF7_DDR     DDRF
+
 
 /**
  * Some of the pin mapping functions of the Teensduino extension to the Arduino IDE

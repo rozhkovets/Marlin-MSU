@@ -1,9 +1,10 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
- * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
+ * Copyright (c) 2015-2016 Nico Tonnhofer wurstnase.reprap@gmail.com
+ * Copyright (c) 2017 Victor Perez
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -223,7 +224,7 @@ void MarlinHAL::init() {
   #endif
   #if HAS_SD_HOST_DRIVE
     MSC_SD_init();
-  #elif ALL(SERIAL_USB, EMERGENCY_PARSER)
+  #elif BOTH(SERIAL_USB, EMERGENCY_PARSER)
     usb_cdcacm_set_hooks(USB_CDCACM_HOOK_RX, my_rx_callback);
   #endif
   #if PIN_EXISTS(USB_CONNECT)

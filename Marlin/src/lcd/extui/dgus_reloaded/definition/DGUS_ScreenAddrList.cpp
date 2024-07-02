@@ -36,7 +36,7 @@ constexpr DGUS_Addr LIST_HOME[] PROGMEM = {
   (DGUS_Addr)0
 };
 
-#if HAS_MEDIA
+#if ENABLED(SDSUPPORT)
   constexpr DGUS_Addr LIST_PRINT[] PROGMEM = {
     DGUS_Addr::SD_Type,
     DGUS_Addr::SD_FileName0,
@@ -210,7 +210,7 @@ constexpr DGUS_Addr LIST_WAIT[] PROGMEM = {
 
 const struct DGUS_ScreenAddrList screen_addr_list_map[] PROGMEM = {
   MAP_HELPER(DGUS_Screen::HOME,                 LIST_HOME),
-  #if HAS_MEDIA
+  #if ENABLED(SDSUPPORT)
     MAP_HELPER(DGUS_Screen::PRINT,              LIST_PRINT),
   #endif
   MAP_HELPER(DGUS_Screen::PRINT_STATUS,         LIST_PRINT_STATUS),
