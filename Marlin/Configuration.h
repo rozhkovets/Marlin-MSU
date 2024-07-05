@@ -423,16 +423,15 @@
   #define MSU_BEARING_ANGLES { 0, 26, 55, 84, 112, 140 } // defines the angle from on ball-bearing on the idler
 
   #define MSU_EXTRUDER_NBR 1 //define the MSU extruder motor number (as setup in your board pins file)
-  #define MSU_SPEED 40 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
+  #define MSU_SPEED 50 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
 
   #define MSU_ORIGINAL_EXTRUDER_SPEED 4  // скорость загрузки и выгрузки основного экструдера, мм/сек
-  #define MSU_ORIGINAL_EXTRUDER_PURGE_LENGTH 0 //расстояние прочистки экструдера
+  #define MSU_ORIGINAL_EXTRUDER_PURGE_LENGTH 10 //расстояние прочистки экструдера после замены филамента
 
   #define MSU_GEAR_LENGTH 20 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
   #define MSU_BOWDEN_TUBE_LENGTH 120 //length between MSU and the nozzle or from the MSU to the extruder gears (for direct drive setups)
 
-
-    
+   
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
     #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 50 //длина загрузка двумя экструдерами
@@ -446,37 +445,37 @@
   #define MSU_WITH_CUTTER
   #if ENABLED(MSU_WITH_CUTTER)
     #define MSU_SERVO_CUTTER_NBR 2 //define the servo motor number
-    #define MSU_SERVO_CUTTER_CUT_ANGL 40 // угол позиции резки
+    #define MSU_SERVO_CUTTER_CUT_ANGL 45 // угол позиции резки
     #define MSU_SERVO_CUTTER_PARK_ANGL 90  //угол парковки резака
-    #define MSU_SERVO_CUTTER_TRY 3  // количество попыток резки
-    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 0  //сколько мм извлечь перед резкой //max 20 мм biqu h2 v2s // увеличение грозит застреванием в шестернях
+    #define MSU_SERVO_CUTTER_TRY 5  // количество попыток резки
+    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 10  //сколько мм извлечь перед резкой //max 20 мм biqu h2 v2s // увеличение более 20 мм, грозит застреванием в шестернях
   #endif
 
   #define MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE //парковка печатной головы перед сменой филамента
     #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
       //#define MSU_PARK_EXTRUDER_POS { (X_MIN_POS), (Y_MIN_POS + 5), 50 } // кординаты парковки печатной головы
-      #define MSU_PARK_EXTRUDER_MOVE 0 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
+      #define MSU_PARK_EXTRUDER_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
       #define MSU_PARK_EXTRUDER_FR 150  //XY скорость парковки печатной головы, мм/сек
       #define MSU_PARK_EXTRUDER_POS { 0, 50} // XY кординаты парковки печатной головы
-      
-      #define MSU_PARK_EXTRUDER_FOR_WIPE // после парковки, переместить в зону прочистки
-      #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
-      #define MSU_PARK_EXTRUDER_WIPE_POS { 0, 10} // XY кординаты места начала прочистки
-  
+        
       #define MSU_NOZZLE_WIPE //очистка сопла в специальную корзину во время парковки
       #if ENABLED(MSU_NOZZLE_WIPE)
+        #define MSU_PARK_EXTRUDER_FOR_WIPE // после парковки, переместить в зону прочистки
+        #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
+        #define MSU_PARK_EXTRUDER_WIPE_POS { 0, 10} // XY кординаты места начала прочистки
         //gcode писать либо в одну строку разделяя команды \n, либо в несколько, но нужно добавить одинарный слеш 
         //перед очисткой сопло должно находиться в X0 Y10
-        //G91 M83 включить относительные перемещения и экструзию
-        //G1 E40 F300 выдавить 40 мм (5 мм/сек)
-        //
-        //M82 G90 включить абсолютные перемещения
+        //M83 включить относительную и экструзию
+        //G92 E0 позицию экструдера задать равной 0
+        //G1 E.1 F300 выдавить 0.1 мм (5 мм/сек) //костыль, помогает избежать? странного поведения (экструзия одной командой, а затем следует резкий возврат позиции экструдера)
+        //G1 E20 F300 выдавить 25 мм (5 мм/сек)
+        //G92 E0 позицию экструдера задать равной 0
         //пройти соплом через щетку X0 Y10 -> X10 Y10 (100 мм/сек)
-        //M83 включить относительную экструзию (необходимо для многоцветной печати, в соответствии со слайсером)
-        //#define MSU_NOZZLE_WIPE_CGODE "G91\nM83\nG1 E40 F300\nM82\nG90\nG0 X10 Y10 F3000\nM83"
-        //#define MSU_NOZZLE_WIPE_CGODE "G1 E40 F300\nG0 X10 Y10 F3000\n"
-        #define MSU_NOZZLE_WIPE_CGODE "G0 E30 F300\nG4 P5000\nG0 X10 Y10 F300"
-      #endif
+        
+        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E20 F300\nG92 E0\nG0 X10 Y10 F300"
+        
+        //#define MSU_NOZZLE_WIPE_CGODE "M810" //run macros 0
+        #endif
     #endif
  
 #endif
@@ -2467,7 +2466,6 @@
 
   // Explicit wipe G-code script applies to a G12 with no arguments.
   //#define WIPE_SEQUENCE_COMMANDS "G1 X-17 Y25 Z10 F4000\nG1 Z1\nM114\nG1 X-17 Y25\nG1 X-17 Y95\nG1 X-17 Y25\nG1 X-17 Y95\nG1 X-17 Y25\nG1 X-17 Y95\nG1 X-17 Y25\nG1 X-17 Y95\nG1 X-17 Y25\nG1 X-17 Y95\nG1 X-17 Y25\nG1 X-17 Y95\nG1 Z15\nM400\nG0 X-10.0 Y-9.0"
-
 #endif
 
 // @section host
