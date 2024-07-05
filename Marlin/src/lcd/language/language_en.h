@@ -730,7 +730,7 @@ namespace Language_en {
   LSTR MSG_MMU2_RESET                     = _UxGT("Reset MMU");
   LSTR MSG_MMU2_RESETTING                 = _UxGT("MMU Resetting...");
   LSTR MSG_MMU2_EJECT_RECOVER             = _UxGT("Remove, click");
-  
+//MSU  
   LSTR MSG_MSU_MENU                        = _UxGT("MSU");
   LSTR MSG_MSU_IDLER_PARK_IDLER            = _UxGT("Park idler");
   LSTR MSG_MSU_SELECT_FILAMENT             = _UxGT("Choose filament");
@@ -740,7 +740,7 @@ namespace Language_en {
   LSTR MSG_MSU_MSU_BOWDEN_LENGHT           = _UxGT("Bowden tube length");
   LSTR MSG_MSU_SET_IDLER_POSITION          = _UxGT("Set idler position");
   LSTR MSG_MSU_SET_SERVO_TO_POS_3          = _UxGT("Set servo to position 3");
-
+//MSU
 
   LSTR MSG_MIX                            = _UxGT("Mix");
   LSTR MSG_MIX_COMPONENT_N                = _UxGT("Component =");

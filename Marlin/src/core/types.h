@@ -642,7 +642,9 @@ struct XYZEval {
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk, const T pu, const T pv) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; u = pu; v = pv; }
   #endif
 
+//MSU
   FI void resetExtruder()                                     { e = 0; }
+//MSU
   // Setters taking struct types and arrays
   FI void set(const XYval<T> pxy)                           { x = pxy.x; y = pxy.y; }
   FI void set(const XYZval<T> pxyz)                         { set(NUM_AXIS_ELEM(pxyz)); }
