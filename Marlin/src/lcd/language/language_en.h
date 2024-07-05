@@ -740,6 +740,7 @@ namespace Language_en {
   LSTR MSG_MSU_MSU_BOWDEN_LENGHT           = _UxGT("Bowden tube length");
   LSTR MSG_MSU_SET_IDLER_POSITION          = _UxGT("Set idler position");
   LSTR MSG_MSU_SET_SERVO_TO_POS_3          = _UxGT("Set servo to position 3");
+  LSTR MSG_MSU_CUT_FILAMENT                = _UxGT("Cut filament");
 //MSU
 
   LSTR MSG_MIX                            = _UxGT("Mix");

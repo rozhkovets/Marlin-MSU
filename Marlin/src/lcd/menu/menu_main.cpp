@@ -54,9 +54,11 @@
   #include "menu_mmu2.h"
 #endif
 
+//MSU
 #if ENABLED(MSU)
   #include "menu_msu.h"
 #endif
+//MSU
 
 #if ENABLED(PASSWORD_FEATURE)
   #include "../../feature/password/password.h"
@@ -355,9 +357,11 @@ void menu_main() {
     if (!busy) SUBMENU(MSG_MMU2_MENU, menu_mmu2);
   #endif
 
+//MSU
   #if ENABLED (MSU_MENU)
     SUBMENU(MSG_MSU_MENU, menu_msu);
   #endif
+//MSU
 
   SUBMENU(MSG_CONFIGURATION, menu_configuration);
 

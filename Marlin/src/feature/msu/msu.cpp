@@ -177,20 +177,6 @@ void MSUMP::park_extruder()
 //очистка сопла
 void MSUMP::nozzle_wipe()    
 {
-  //queue.inject(cmd);
-  //проверка на включение относительной экструзии M83 axis_is_relative
-  /*
-    static bool axis_is_relative(const AxisEnum a) {
-    #if HAS_EXTRUDERS
-      if (a == E_AXIS) {
-        if (TEST(axis_relative, E_MODE_REL)) return true;
-        if (TEST(axis_relative, E_MODE_ABS)) return false;
-      }
-    #endif
-    return TEST(axis_relative, a);
-  }
-  */
-  
   gcode.process_subcommands_now(F(MSU_NOZZLE_WIPE_CGODE));
 }
 
