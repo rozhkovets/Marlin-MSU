@@ -43,18 +43,22 @@ void MSUMP::tool_change(uint8_t index)
 
   //проверка на уже выбранный
   if (selected_filament_nbr == index) return; // Nothing to do
-	  														   
+
   //парковка перед сменой филамента
   #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
     extruder_origin_position = current_position; //сохранить исходное положение экструдера
+    //#if (ENABLED(MSU_PARK_RETRACT_BEFORE_PARK_MM) AND ENABLED(MSU_PARK_RETRACT_BEFORE_PARK_FR))
+    #if ALL(MSU_PARK_RETRACT_BEFORE_PARK_MM, MSU_PARK_RETRACT_BEFORE_PARK_FR)
+      move_extruder(-MSU_PARK_RETRACT_BEFORE_PARK_MM, MSU_PARK_RETRACT_BEFORE_PARK_FR, MSU_ORIGINAL_EXTRUDER_NBR)
+    #endif
     park_extruder();
-  #endif													  
+  #endif
 
   //выгрузка филамента из экструдера (и резка)
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #if ENABLED(MSU_WITH_CUTTER)
       move_extruder(-MSU_SERVO_CUTTER_RETRACT_LENGHT, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
-      cut_filament();
+      cut_filament(MSU_SERVO_CUTTER_TRY);
     #else  
       move_extruder(-MSU_GEAR_LENGTH, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
     #endif
@@ -131,9 +135,9 @@ void MSUMP::idler_select_filament_nbr(int index)
 
 
 //резка филамента
-void MSUMP::cut_filament() 
+void MSUMP::cut_filament(int cut_try) 
 {
-  for (int i = 0; i < MSU_SERVO_CUTTER_TRY; i++)
+  for (int i = 0; i < cut_try; i++)
   {
     servo[MSU_SERVO_CUTTER_NBR].move(MSU_SERVO_CUTTER_CUT_ANGL);
     safe_delay(100);

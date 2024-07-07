@@ -23,7 +23,7 @@ public:
     static bool active_filament_change();
     static const float get_MSU_BOWDEN_TUBE_SETUP_length();
 //new
-    static void cut_filament();
+    static void cut_filament(int cut_try);
     static void nozzle_wipe();
     static void park_extruder();
 //new

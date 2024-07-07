@@ -54,7 +54,7 @@ void menu_msu() {
   ACTION_ITEM(MSG_MSU_IDLER_PARK_IDLER, []{ msu.idler_select_filament_nbr(-1); });
   SUBMENU(MSG_MSU_SELECT_FILAMENT, menu_msu_change_filament);
   SUBMENU(MSG_MSU_SET_IDLER_POSITION, menu_msu_set_idler_position);
-  ACTION_ITEM(MSG_MSU_CUT_FILAMENT, []{ msu.cut_filament(); });
+  ACTION_ITEM(MSG_MSU_CUT_FILAMENT, []{ msu.cut_filament(1); });
   END_MENU();
 }
 

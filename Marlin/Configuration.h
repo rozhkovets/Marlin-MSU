@@ -453,7 +453,9 @@
 
   #define MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE //парковка печатной головы перед сменой филамента
     #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
-      //#define MSU_PARK_EXTRUDER_POS { (X_MIN_POS), (Y_MIN_POS + 5), 50 } // кординаты парковки печатной головы
+      #define MSU_PARK_RETRACT_BEFORE_PARK_MM 1  //выполнить ретракт перед парковкой, мм
+      #define MSU_PARK_RETRACT_BEFORE_PARK_FR 20 //выполнить ретракт перед парковкой, скорость мм/сек
+      
       #define MSU_PARK_EXTRUDER_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
       #define MSU_PARK_EXTRUDER_FR 150  //XY скорость парковки печатной головы, мм/сек
       #define MSU_PARK_EXTRUDER_POS { 0, 50} // XY кординаты парковки печатной головы
@@ -467,12 +469,13 @@
         //перед очисткой сопло должно находиться в X0 Y10
         //M83 включить относительную и экструзию
         //G92 E0 позицию экструдера задать равной 0
-        //G1 E.1 F300 выдавить 0.1 мм (5 мм/сек) //костыль, помогает избежать? странного поведения (экструзия одной командой, а затем следует резкий возврат позиции экструдера)
-        //G1 E20 F300 выдавить 25 мм (5 мм/сек)
+        //G0 E.1 F300 выдавить 0.1 мм (5 мм/сек) //костыль, помогает избежать? странного поведения (экструзия одной командой, а затем следует резкий возврат позиции экструдера)
+        //G0 E20 F300 выдавить 25 мм (5 мм/сек)
+        //G0 E-2 F600 втянуть 1мм (15 мм/сек)
         //G92 E0 позицию экструдера задать равной 0
-        //пройти соплом через щетку X0 Y10 -> X10 Y10 (100 мм/сек)
+        //пройти соплом через щетку X0 Y10 -> X10 Y10 (150 мм/сек)
         
-        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E20 F300\nG92 E0\nG0 X10 Y10 F300"
+        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E15 F300\nG0 E-1 F900\nG92 E0\nG0 X10 Y10 F9000"
         
         //#define MSU_NOZZLE_WIPE_CGODE "M810" //run macros 0
         #endif
