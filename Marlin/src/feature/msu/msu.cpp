@@ -85,10 +85,9 @@ void MSUMP::move_extruder(float dist, const_feedRate_t speed,
 // move idler to specific filament selection, -1 to park the idler
 void MSUMP::idler_select_filament_nbr(int index) {
   if (index == -1)
-    servo[MSU_SERVO_IDLER_NBR].move(270);
+    servo[MSU_SERVO_IDLER_NBR].move(MSU_PARKING_POSITION);
   else
-    servo[MSU_SERVO_IDLER_NBR].move(MSU_SERVO_OFFSET +
-                                    (index + 1) * MSU_BEARING_ANGLES);
+    servo[MSU_SERVO_IDLER_NBR].move(MSU_SERVO_OFFSET + index * MSU_BEARING_ANGLES);
 }
 
 #endif
