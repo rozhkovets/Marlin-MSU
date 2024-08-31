@@ -6,7 +6,7 @@
 #include "../../module/servo.h"
 #include "msu.h"
 
-float selected_filament_nbr = -1;
+float selected_filament_nbr = -1; // Starting state is all filaments retracted
 float idler_first_filament_pos = 30;
 float idler_angle_between_bearing = 26;
 float bowdenTubeLength = MSU_BOWDEN_TUBE_LENGTH;
@@ -27,19 +27,21 @@ void MSUMP::tool_change(uint8_t index) {
   if (selected_filament_nbr == index)
     return; // Nothing to do
 
-// Extract the filament from the extruder gears when working with a direct drive
-// setup
+  // Extract the filament from the extruder gears when working with a direct
+  // drive setup
+  if (selected_filament_nbr != -1) {
 #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
-  move_extruder(-MSU_GEAR_LENGTH, MSU_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
+    move_extruder(-MSU_GEAR_LENGTH, MSU_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
 #endif
 
 #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
-  move_extruder(-MSU_GEAR_LENGTH, MSU_SPEED, MSU_EXTRUDER_NBR);
+    move_extruder(-MSU_GEAR_LENGTH, MSU_SPEED, MSU_EXTRUDER_NBR);
 #endif
-  // Move the idler to the selected filament's position
-  idler_select_filament_nbr(selected_filament_nbr);
-  move_extruder(-MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor,
-                MSU_SPEED, MSU_EXTRUDER_NBR);
+    // Move the idler to the selected filament's position
+    idler_select_filament_nbr(selected_filament_nbr);
+    move_extruder(-MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor,
+                  MSU_SPEED, MSU_EXTRUDER_NBR);
+  }
   idler_select_filament_nbr(index);
   selected_filament_nbr = index;
   move_extruder(MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor,
@@ -87,7 +89,8 @@ void MSUMP::idler_select_filament_nbr(int index) {
   if (index == -1)
     servo[MSU_SERVO_IDLER_NBR].move(MSU_PARKING_POSITION);
   else
-    servo[MSU_SERVO_IDLER_NBR].move(MSU_SERVO_OFFSET + index * MSU_BEARING_ANGLES);
+    servo[MSU_SERVO_IDLER_NBR].move(MSU_SERVO_OFFSET +
+                                    index * MSU_BEARING_ANGLES);
 }
 
 #endif
