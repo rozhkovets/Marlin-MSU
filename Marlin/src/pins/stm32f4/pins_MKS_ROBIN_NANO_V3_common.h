@@ -51,7 +51,6 @@
 #define SERVO0_PIN                          PA8   // Enable BLTOUCH
 
 //MSU
-
 #define SERVO1_PIN                          PC2   // MSU idler servo
 #define SERVO2_PIN                          PC3   // MSU servo cutter
 
@@ -133,7 +132,12 @@ PB15
 //E0 -> E2
 //E1 -> E0
 //E2 -> E1
-// моторы E0 и Z2(E1) переставлены местами?
+//не понятно почему так
+
+//MSU E = E2 
+//E0 = E1(Z1)
+//Z = E0
+// моторы E0 и Z2(E1) переставлены местами
 
 
 #define X_ENABLE_PIN                        PE4
