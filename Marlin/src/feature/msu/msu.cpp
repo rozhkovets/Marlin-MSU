@@ -12,10 +12,11 @@
 
 #include "../../lcd/marlinui.h"
 
-int MSU_IDLER_POSITION[6] = MSU_BEARING_ANGLES; //parking, position 1 - 5
+#include "../../feature/runout.h"
 
-//float selected_filament_nbr = -1;
-int selected_filament_nbr = 0;
+int MSU_IDLER_POSITION[6] = MSU_BEARING_ANGLES; //parking, position 1 - 5
+bool runout_state = false;
+float selected_filament_nbr = 0;
 
 //float idler_first_filament_pos = 30;
 //float idler_angle_between_bearing = 26;
@@ -31,7 +32,8 @@ constexpr feedRate_t park_fr_xy = MSU_PARK_EXTRUDER_FR;
 xyze_pos_t extruder_park_wipe_position = MSU_PARK_EXTRUDER_WIPE_POS;
 
 
-
+    #define MSU_RUNOUT_SENSOR_ON_GCODE  "M412 S1"
+    #define MSU_RUNOUT_SENSOR_OFF_GCODE "M412 S0"
 
 xyz_pos_t msu_park_point NOZZLE_PARK_POINT;											   
 
@@ -48,7 +50,16 @@ void MSUMP::tool_change(uint8_t index)
   //вывод сообщения на экран
   //#if ENABLED(MSU_LCD_MESSAGES) {    ui.set_status((std::string("Change T") + std::to_string(selected_filament_nbr) + std::string(" -> T") + std::to_string(index)).c_str(), true);}
   //#endif
-  
+  #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
+    runout_state = runout.enabled;
+    if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_OFF_GCODE));
+  #endif
+
+
+  //#if ENABLED(MSU_RUNOUT_SENSOR) 
+  //  gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_OFF_GCODE));
+  //#endif
+
   //парковка перед сменой филамента
   #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
     extruder_origin_position = current_position; //сохранить исходное положение экструдера
@@ -75,16 +86,17 @@ void MSUMP::tool_change(uint8_t index)
 
   //Выгрузка MSU
   idler_select_filament_nbr(selected_filament_nbr);
+  move_extruder(-0.1 * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR); //костыль резкого первого движения
   move_extruder(-MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
 
   //Загрузка MSU
   idler_select_filament_nbr(index);
   selected_filament_nbr = index;
-  move_extruder(MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
+  move_extruder(MSU_BOWDEN_TUBE_LENGTH - 1 * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
 
   //Загрузка экструдера
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
-    move_both_extruders(MSU_DIRECT_DRIVE_BOTH_LOAD_MM, MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED);
+    move_both_extruders(MSU_DIRECT_DRIVE_BOTH_LOAD_MM + 1, MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED);
     idler_select_filament_nbr(-1);
     move_extruder(MSU_GEAR_LENGTH + MSU_ORIGINAL_EXTRUDER_PURGE_LENGTH, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
   #endif
@@ -103,15 +115,24 @@ void MSUMP::tool_change(uint8_t index)
   #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
     do_blocking_move_to_xy(extruder_origin_position, park_fr_xy); //вернуть экструдер на исходную позицию
   #endif
+  
+  #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
+    if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
+  #endif
+  //#if ENABLED(MSU_RUNOUT_SENSOR) 
+  //  gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
+  //#endif
 
   //убрать сообщение с экрана
+  //Вызывает сбой и перезапуск?
+  /*
   #if ENABLED(MSU_LCD_MESSAGES) 
     ui.set_status((std::string("Current T = T") + std::to_string(selected_filament_nbr)).c_str(), true);
   #endif
   //убрать сообщение с экрана
   #if ENABLED(MSU_LCD_MESSAGES) 
     //ui.reset_status();
-  #endif
+  #endif*/
 }
 
 void MSUMP::move_both_extruders(float dist, const_feedRate_t speed)

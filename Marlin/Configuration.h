@@ -430,18 +430,18 @@
   #define MSU_BEARING_ANGLES { 0, 26, 55, 84, 112, 140 } // defines the angle from on ball-bearing on the idler
 
   #define MSU_EXTRUDER_NBR 1 //define the MSU extruder motor number (as setup in your board pins file)
-  #define MSU_SPEED 50 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
+  #define MSU_SPEED 40 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
 
   #define MSU_ORIGINAL_EXTRUDER_SPEED 4  // скорость загрузки и выгрузки основного экструдера, мм/сек
   #define MSU_ORIGINAL_EXTRUDER_PURGE_LENGTH 10 //расстояние прочистки экструдера после замены филамента
 
   #define MSU_GEAR_LENGTH 20 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
-  #define MSU_BOWDEN_TUBE_LENGTH 120 //length between MSU and the nozzle or from the MSU to the extruder gears (for direct drive setups)
+  #define MSU_BOWDEN_TUBE_LENGTH 140 //длина выгрузки от места резки до места перед смесителем, должно быть не больше EXTRUDE_MAXLENGTH 
 
    
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 50 //длина загрузка двумя экструдерами
+    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 65 //длина загрузка двумя экструдерами
     #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 12 // MSU_SPEED // скорость загрузки двумя экструдерами
   #endif
 
@@ -461,63 +461,36 @@
   #define MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE //парковка печатной головы перед сменой филамента
     #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
       #define MSU_PARK_RETRACT_BEFORE_PARK_MM 1  //выполнить ретракт перед парковкой, мм
-      #define MSU_PARK_RETRACT_BEFORE_PARK_FR 20 //выполнить ретракт перед парковкой, скорость мм/сек
+      #define MSU_PARK_RETRACT_BEFORE_PARK_FR 15 //выполнить ретракт перед парковкой, скорость мм/сек
       
       #define MSU_PARK_EXTRUDER_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
       #define MSU_PARK_EXTRUDER_FR 150  //XY скорость парковки печатной головы, мм/сек
-      #define MSU_PARK_EXTRUDER_POS { 0, 50} // XY кординаты парковки печатной головы
+      #define MSU_PARK_EXTRUDER_POS { -5, 50} // XY кординаты парковки печатной головы
         
       #define MSU_NOZZLE_WIPE //очистка сопла в специальную корзину во время парковки
       #if ENABLED(MSU_NOZZLE_WIPE)
         #define MSU_PARK_EXTRUDER_FOR_WIPE // после парковки, переместить в зону прочистки
         #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
-        #define MSU_PARK_EXTRUDER_WIPE_POS { 0, 10} // XY кординаты места начала прочистки
+        #define MSU_PARK_EXTRUDER_WIPE_POS { -4, -1} // XY кординаты места начала прочистки
         //gcode писать либо в одну строку разделяя команды \n, либо в несколько, но нужно добавить одинарный слеш 
-        //перед очисткой сопло должно находиться в X0 Y10
-        //M83 включить относительную и экструзию
+        //перед очисткой сопло должно находиться в X-5 Y-1
+        //M83 включить относительную экструзию
         //G92 E0 позицию экструдера задать равной 0
         //G0 E.1 F300 выдавить 0.1 мм (5 мм/сек) //костыль, помогает избежать? странного поведения (экструзия одной командой, а затем следует резкий возврат позиции экструдера)
-        //G0 E20 F300 выдавить 25 мм (5 мм/сек)
-        //G0 E-2 F600 втянуть 1мм (15 мм/сек)
+        //G0 E20 F300 выдавить 20 мм (5 мм/сек)
+        //G0 E-2 F900 втянуть 2мм (15 мм/сек)
         //G92 E0 позицию экструдера задать равной 0
-        //пройти соплом через щетку X0 Y10 -> X10 Y10 (150 мм/сек)
+        //пройти соплом через щетку X-5 Y-1 -> X15 Y-1 (150 мм/сек)
         
-        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E15 F300\nG0 E-1 F900\nG92 E0\nG0 X10 Y10 F9000"
+        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E20 F300\nG0 E-2 F900\nG92 E0\nG0 X15 Y-1 F9000"
         
         //#define MSU_NOZZLE_WIPE_CGODE "M810" //run macros 0
-        #endif
+      #endif
     #endif
-  #define MSU_LCD_MESSAGES
+  //#define MSU_LCD_MESSAGES
+  //Если используется датчик наличия филамента, его необходимо выключить при замене, иначе его срабатываение во время замены вызовет паузу после замены
+  #define MSU_ON_OFF_RUNOUT_SENSOR //выключает датчик филамента на время замены, если он включен
 #endif
-/*
-#define MSU
-#if ENABLED(MSU)
-
-  //#define MSU_BOWDEN_TUBE_SETUP //enable when using a bowden style setup
-  #define MSU_DIRECT_DRIVE_SETUP //enable when using a direct-drive setup
-  //#define MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP //enable when using a direct-drive setup using a single driver for both the MSU and the extruder
-
-  #define MSU_MENU//LCD Menu
-
-  #define MSU_SERVO_IDLER_NBR 1 //define the servo motor number
-  #define MSU_SERVO_OFFSET 0 //defines the offset in degrees for the idler, this can be used to fine tune idler alignment
-  #define MSU_BEARING_ANGLES 26 //defines the angle from on ball-bearing to the next on the idler
-  #define MSU_SPEED 25 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
-  #define MSU_EXTRUDER_NBR 1 //define the MSU extruder motor number (as setup in your board pins file)
-  #define MSU_PARKING_POSITION 270 //define angle of the servo for the parking position
-
-  #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
-    #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
-  #endif
-
-  #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
-    #define MSU_EXTRUDER_STEPS_PER_MM 120 //steps per mm of the MSU, should not require any tuning. Necessary since we are using a single driver with motors that potentially have different steps per mm
-  #endif
-
-  #define MSU_BOWDEN_TUBE_LENGTH 600 //length between MSU and the nozzle or from the MSU to the extruder gears (for direct drive setups)
-  #define MSU_GEAR_LENGTH 40 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
-#endif
-*/
 //MSU
 
 
@@ -1005,7 +978,7 @@
  * Note: For Bowden Extruders make this large enough to allow load/unload.
  */
 #define PREVENT_LENGTHY_EXTRUDE
-#define EXTRUDE_MAXLENGTH 500
+#define EXTRUDE_MAXLENGTH 1000
 
 //===========================================================================
 //======================== Thermal Runaway Protection =======================
@@ -3743,7 +3716,7 @@
  *  - Turn off after the print has finished and the user has pushed a button
  */
 #if ANY(BLINKM, RGB_LED, RGBW_LED, PCA9632, PCA9533, NEOPIXEL_LED)
-  #define PRINTER_EVENT_LEDS
+  //#define PRINTER_EVENT_LEDS
 #endif
 
 // @section servos
