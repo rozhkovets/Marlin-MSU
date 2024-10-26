@@ -32,8 +32,8 @@ constexpr feedRate_t park_fr_xy = MSU_PARK_EXTRUDER_FR;
 xyze_pos_t extruder_park_wipe_position = MSU_PARK_EXTRUDER_WIPE_POS;
 
 
-    #define MSU_RUNOUT_SENSOR_ON_GCODE  "M412 S1"
-    #define MSU_RUNOUT_SENSOR_OFF_GCODE "M412 S0"
+#define MSU_RUNOUT_SENSOR_ON_GCODE  "M412 S1"
+#define MSU_RUNOUT_SENSOR_OFF_GCODE "M412 S0"
 
 xyz_pos_t msu_park_point NOZZLE_PARK_POINT;											   
 
@@ -50,20 +50,15 @@ void MSUMP::tool_change(uint8_t index)
   //вывод сообщения на экран
   //#if ENABLED(MSU_LCD_MESSAGES) {    ui.set_status((std::string("Change T") + std::to_string(selected_filament_nbr) + std::string(" -> T") + std::to_string(index)).c_str(), true);}
   //#endif
+
   #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
     runout_state = runout.enabled;
     if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_OFF_GCODE));
   #endif
 
-
-  //#if ENABLED(MSU_RUNOUT_SENSOR) 
-  //  gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_OFF_GCODE));
-  //#endif
-
   //парковка перед сменой филамента
   #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
     extruder_origin_position = current_position; //сохранить исходное положение экструдера
-    //#if (ENABLED(MSU_PARK_RETRACT_BEFORE_PARK_MM) AND ENABLED(MSU_PARK_RETRACT_BEFORE_PARK_FR))
     #if ALL(MSU_PARK_RETRACT_BEFORE_PARK_MM, MSU_PARK_RETRACT_BEFORE_PARK_FR)
       move_extruder(-MSU_PARK_RETRACT_BEFORE_PARK_MM, MSU_PARK_RETRACT_BEFORE_PARK_FR, MSU_ORIGINAL_EXTRUDER_NBR)
     #endif
@@ -75,6 +70,9 @@ void MSUMP::tool_change(uint8_t index)
     #if ENABLED(MSU_WITH_CUTTER)
       move_extruder(-MSU_SERVO_CUTTER_RETRACT_LENGHT, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
       cut_filament(MSU_SERVO_CUTTER_TRY);
+      //немного загрузить обратно, чтобы появилось свободное место
+      //застревает пруток при сихронной загрузке
+      move_extruder(5, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
     #else  
       move_extruder(-MSU_GEAR_LENGTH, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
     #endif
@@ -92,12 +90,18 @@ void MSUMP::tool_change(uint8_t index)
   //Загрузка MSU
   idler_select_filament_nbr(index);
   selected_filament_nbr = index;
-  move_extruder(MSU_BOWDEN_TUBE_LENGTH - 1 * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
+  move_extruder(MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
 
   //Загрузка экструдера
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     move_both_extruders(MSU_DIRECT_DRIVE_BOTH_LOAD_MM + 1, MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED);
     idler_select_filament_nbr(-1);
+
+    //если загрузка неудачна, должно вызвать срабатывание датчика и M600 сразу после окончания смены филамента
+    #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
+      if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
+    #endif
+
     move_extruder(MSU_GEAR_LENGTH + MSU_ORIGINAL_EXTRUDER_PURGE_LENGTH, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
   #endif
 
@@ -116,12 +120,7 @@ void MSUMP::tool_change(uint8_t index)
     do_blocking_move_to_xy(extruder_origin_position, park_fr_xy); //вернуть экструдер на исходную позицию
   #endif
   
-  #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
-    if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
-  #endif
-  //#if ENABLED(MSU_RUNOUT_SENSOR) 
-  //  gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
-  //#endif
+
 
   //убрать сообщение с экрана
   //Вызывает сбой и перезапуск?
@@ -218,28 +217,4 @@ void MSUMP::nozzle_wipe()
   gcode.process_subcommands_now(F(MSU_NOZZLE_WIPE_CGODE));
 }
 
-#endif
-/*
-String char_to_str(const char* c)
-{
-  String a = str(c);
-  return a;
-}
-*/
-//образец для загрузки до срабатывания датчика
-/*
-    while (wait_for_user) {
-      impatient_beep(max_beep_count);
-      #if ALL(FILAMENT_CHANGE_RESUME_ON_INSERT, FILAMENT_RUNOUT_SENSOR)
-        #if MULTI_FILAMENT_SENSOR
-          #define _CASE_INSERTED(N) case N-1: if (READ(FIL_RUNOUT##N##_PIN) != FIL_RUNOUT##N##_STATE) wait_for_user = false; break;
-          switch (active_extruder) {
-            REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_INSERTED)
-          }
-        #else
-          if (READ(FIL_RUNOUT_PIN) != FIL_RUNOUT_STATE) wait_for_user = false;
-        #endif
-      #endif
-      idle_no_sleep();
-    }
-*/														  
+#endif											  
