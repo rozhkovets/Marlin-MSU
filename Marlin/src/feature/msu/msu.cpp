@@ -18,10 +18,10 @@ int MSU_IDLER_POSITION[6] = MSU_BEARING_ANGLES; //parking, position 1 - 5
 bool runout_state = false;
 int selected_filament_nbr = 0;
 
-  #if ENABLED(MSU_LCD_MESSAGES) 
+#if ENABLED(MSU_LCD_MESSAGES) 
       MString<20> my_message;
+#endif
 
-  #endif
 //float idler_first_filament_pos = 30;
 //float idler_angle_between_bearing = 26;
 //float bowdenTubeLength = MSU_BOWDEN_TUBE_LENGTH;
@@ -53,7 +53,6 @@ void MSUMP::tool_change(uint8_t index)
   
   //вывод сообщения на экран
   #if ENABLED(MSU_LCD_MESSAGES) 
-      //MString<20> my_message;
       my_message.set(F("M117 Change to T"));
       my_message.append(selected_filament_nbr);
       gcode.process_subcommands_now(my_message);
