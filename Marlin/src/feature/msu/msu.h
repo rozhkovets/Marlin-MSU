@@ -26,6 +26,7 @@ public:
     static void cut_filament(int cut_try);
     static void nozzle_wipe();
     static void park_extruder();
+    static char * char_selected_filament_nbr();
 //new
 };
 extern MSUMP msu;

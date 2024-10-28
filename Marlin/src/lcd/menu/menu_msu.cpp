@@ -29,7 +29,6 @@
 #include "../../module/planner.h"
 #include "menu_item.h"
 
-
 void menu_msu_change_filament() {
   START_MENU();
   BACK_ITEM(MSG_MSU_MENU);
@@ -54,11 +53,13 @@ void menu_msu_set_idler_position() {
 void menu_msu() {
   START_MENU();
   BACK_ITEM(MSG_MAIN_MENU);
+  PSTRING_ITEM_P(MSG_MSU_CURRENT_TOOL, msu.char_selected_filament_nbr(), SS_FULL); 
   ACTION_ITEM(MSG_MSU_IDLER_PARK_IDLER, []{ msu.idler_select_filament_nbr(-1); });
   SUBMENU(MSG_MSU_SELECT_FILAMENT, menu_msu_change_filament);
   SUBMENU(MSG_MSU_SET_IDLER_POSITION, menu_msu_set_idler_position);
   ACTION_ITEM(MSG_MSU_CUT_FILAMENT, []{ msu.cut_filament(1); });
   END_MENU();
+  ui.refresh(LCDVIEW_CALL_REDRAW_NEXT);
 }
 
 #endif // MSU_MENU

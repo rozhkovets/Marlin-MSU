@@ -19,8 +19,10 @@ bool runout_state = false;
 int selected_filament_nbr = 0;
 
 #if ENABLED(MSU_LCD_MESSAGES) 
-      MString<20> my_message;
+  MString<20> my_message;
 #endif
+
+char char_arr [3];
 
 //float idler_first_filament_pos = 30;
 //float idler_angle_between_bearing = 26;
@@ -53,6 +55,7 @@ void MSUMP::tool_change(uint8_t index)
   
   //вывод сообщения на экран
   #if ENABLED(MSU_LCD_MESSAGES) 
+      //MString<20> my_message;
       my_message.set(F("M117 Change to T"));
       my_message.append(selected_filament_nbr);
       gcode.process_subcommands_now(my_message);
@@ -216,6 +219,14 @@ void MSUMP::park_extruder()
 void MSUMP::nozzle_wipe()    
 {
   gcode.process_subcommands_now(F(MSU_NOZZLE_WIPE_CGODE));
+}
+
+char * MSUMP::char_selected_filament_nbr()
+{
+   //char_arr = "T";
+   sprintf(char_arr, "%c", 'T');
+   sprintf(char_arr+strlen(char_arr), "%d", selected_filament_nbr);
+   return char_arr;
 }
 
 #endif											  
