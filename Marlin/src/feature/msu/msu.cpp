@@ -16,8 +16,12 @@
 
 int MSU_IDLER_POSITION[6] = MSU_BEARING_ANGLES; //parking, position 1 - 5
 bool runout_state = false;
-float selected_filament_nbr = 0;
+int selected_filament_nbr = 0;
 
+  #if ENABLED(MSU_LCD_MESSAGES) 
+      MString<20> my_message;
+
+  #endif
 //float idler_first_filament_pos = 30;
 //float idler_angle_between_bearing = 26;
 //float bowdenTubeLength = MSU_BOWDEN_TUBE_LENGTH;
@@ -48,8 +52,12 @@ void MSUMP::tool_change(uint8_t index)
   if (selected_filament_nbr == index) return; // Nothing to do
   
   //вывод сообщения на экран
-  //#if ENABLED(MSU_LCD_MESSAGES) {    ui.set_status((std::string("Change T") + std::to_string(selected_filament_nbr) + std::string(" -> T") + std::to_string(index)).c_str(), true);}
-  //#endif
+  #if ENABLED(MSU_LCD_MESSAGES) 
+      //MString<20> my_message;
+      my_message.set(F("M117 Change to T"));
+      my_message.append(selected_filament_nbr);
+      gcode.process_subcommands_now(my_message);
+  #endif
 
   #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
     runout_state = runout.enabled;
@@ -115,23 +123,17 @@ void MSUMP::tool_change(uint8_t index)
     nozzle_wipe();
   #endif
 
+  #if ENABLED(MSU_LCD_MESSAGES) 
+      my_message.set(F("M117 T"));
+      my_message.append(selected_filament_nbr);
+      gcode.process_subcommands_now(my_message);
+  #endif
+
   //возврат после смены филамента
   #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
     do_blocking_move_to_xy(extruder_origin_position, park_fr_xy); //вернуть экструдер на исходную позицию
   #endif
-  
 
-
-  //убрать сообщение с экрана
-  //Вызывает сбой и перезапуск?
-  /*
-  #if ENABLED(MSU_LCD_MESSAGES) 
-    ui.set_status((std::string("Current T = T") + std::to_string(selected_filament_nbr)).c_str(), true);
-  #endif
-  //убрать сообщение с экрана
-  #if ENABLED(MSU_LCD_MESSAGES) 
-    //ui.reset_status();
-  #endif*/
 }
 
 void MSUMP::move_both_extruders(float dist, const_feedRate_t speed)

@@ -487,7 +487,7 @@
         //#define MSU_NOZZLE_WIPE_CGODE "M810" //run macros 0
       #endif
     #endif
-  //#define MSU_LCD_MESSAGES
+  #define MSU_LCD_MESSAGES //via M117
   //Если используется датчик наличия филамента, его необходимо выключить при замене, иначе его срабатываение во время замены вызовет паузу после замены
   #define MSU_ON_OFF_RUNOUT_SENSOR //выключает датчик филамента на время замены, если он включен
 #endif
