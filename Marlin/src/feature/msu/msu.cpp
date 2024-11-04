@@ -19,7 +19,7 @@ bool runout_state = false;
 int selected_filament_nbr = 0;
 
 #if ENABLED(MSU_LCD_MESSAGES) 
-  MString<20> my_message;
+  MString<30> my_message;
 #endif
 
 char char_arr [3];
@@ -56,7 +56,9 @@ void MSUMP::tool_change(uint8_t index)
   //вывод сообщения на экран
   #if ENABLED(MSU_LCD_MESSAGES) 
       //MString<20> my_message;
-      my_message.set(F("M117 Change to T"));
+      my_message.set(F("M117 Change to F"));
+      my_message.append(selected_filament_nbr+1);
+      my_message.append("- T");
       my_message.append(selected_filament_nbr);
       gcode.process_subcommands_now(my_message);
   #endif
@@ -82,7 +84,7 @@ void MSUMP::tool_change(uint8_t index)
       cut_filament(MSU_SERVO_CUTTER_TRY);
       //немного загрузить обратно, чтобы появилось свободное место
       //застревает пруток при сихронной загрузке
-      move_extruder(5, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
+      //move_extruder(5, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
     #else  
       move_extruder(-MSU_GEAR_LENGTH, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
     #endif
@@ -100,11 +102,11 @@ void MSUMP::tool_change(uint8_t index)
   //Загрузка MSU
   idler_select_filament_nbr(index);
   selected_filament_nbr = index;
-  move_extruder(MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
+  move_extruder(1 + MSU_BOWDEN_TUBE_LENGTH * steps_per_mm_correction_factor, MSU_SPEED, MSU_EXTRUDER_NBR);
 
   //Загрузка экструдера
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
-    move_both_extruders(MSU_DIRECT_DRIVE_BOTH_LOAD_MM + 1, MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED);
+    move_both_extruders(MSU_DIRECT_DRIVE_BOTH_LOAD_MM, MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED);
     idler_select_filament_nbr(-1);
 
     //если загрузка неудачна, должно вызвать срабатывание датчика и M600 сразу после окончания смены филамента
@@ -126,7 +128,9 @@ void MSUMP::tool_change(uint8_t index)
   #endif
 
   #if ENABLED(MSU_LCD_MESSAGES) 
-      my_message.set(F("M117 T"));
+      my_message.set(F("M117 F"));
+      my_message.append(selected_filament_nbr+1);
+      my_message.append("- T");
       my_message.append(selected_filament_nbr);
       gcode.process_subcommands_now(my_message);
   #endif

@@ -441,7 +441,7 @@
    
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 75 //длина загрузка двумя экструдерами
+    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 100 //длина загрузка двумя экструдерами
     #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 11 // MSU_SPEED // скорость загрузки двумя экструдерами
   #endif
 
@@ -455,7 +455,7 @@
     #define MSU_SERVO_CUTTER_CUT_ANGL 45 // угол позиции резки
     #define MSU_SERVO_CUTTER_PARK_ANGL 90  //угол парковки резака
     #define MSU_SERVO_CUTTER_TRY 3  // количество попыток резки
-    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 10  //сколько мм извлечь перед резкой //max 20 мм biqu h2 v2s // увеличение более 20 мм, грозит застреванием в шестернях
+    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 13  //сколько мм извлечь перед резкой //max 20 мм biqu h2 v2s // увеличение более 20 мм, грозит застреванием в шестернях
   #endif
 
   #define MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE //парковка печатной головы перед сменой филамента
@@ -465,13 +465,13 @@
       
       #define MSU_PARK_EXTRUDER_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
       #define MSU_PARK_EXTRUDER_FR 200  //XY скорость парковки печатной головы, мм/сек
-      #define MSU_PARK_EXTRUDER_POS { -5, 50} // XY кординаты парковки печатной головы
+      #define MSU_PARK_EXTRUDER_POS { -4, 50} // XY кординаты парковки печатной головы
         
       #define MSU_NOZZLE_WIPE //очистка сопла в специальную корзину во время парковки
       #if ENABLED(MSU_NOZZLE_WIPE)
         #define MSU_PARK_EXTRUDER_FOR_WIPE // после парковки, переместить в зону прочистки
         #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
-        #define MSU_PARK_EXTRUDER_WIPE_POS { -3, -1} // XY кординаты места начала прочистки
+        #define MSU_PARK_EXTRUDER_WIPE_POS { -4, -1} // XY кординаты места начала прочистки
         //gcode писать либо в одну строку разделяя команды \n, либо в несколько, но нужно добавить одинарный слеш 
         //перед очисткой сопло должно находиться в X-5 Y-1
         //M83 включить относительную экструзию
@@ -2552,7 +2552,7 @@
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
   // Specify a park position as { X, Y, Z_raise }
-  #define NOZZLE_PARK_POINT { (X_MIN_POS + 0), (Y_MIN_POS + 0), 50 }
+  #define NOZZLE_PARK_POINT { (X_MIN_POS + 2), (Y_MIN_POS + 2), 50 }
   #define NOZZLE_PARK_MOVE          3   // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
   #define NOZZLE_PARK_Z_RAISE_MIN   2   // (mm) Always raise Z by at least this distance
   #define NOZZLE_PARK_XY_FEEDRATE 150   // (mm/s) X and Y axes feedrate (also used for delta Z axis)
