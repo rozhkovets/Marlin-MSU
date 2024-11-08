@@ -32,7 +32,6 @@
 void menu_msu_change_filament() {
   START_MENU();
   BACK_ITEM(MSG_MSU_MENU);
-  //LOOP_L_N(i, 5) ACTION_ITEM_N(i, MSG_MSU_FILAMENT_N, []{ msu.tool_change(MenuItemBase::itemIndex); });
   for (int i = 0; i < 5; ++i){
     ACTION_ITEM_N(i, MSG_MSU_FILAMENT_N, []{ msu.tool_change(MenuItemBase::itemIndex); });
   }
@@ -43,7 +42,6 @@ void menu_msu_set_idler_position() {
   START_MENU();
   BACK_ITEM(MSG_MSU_MENU);
   ACTION_ITEM(MSG_MSU_IDLER_PARK_IDLER, []{ msu.idler_select_filament_nbr(-1); });
-  //LOOP_L_N(i, 5) ACTION_ITEM_N(i, MSG_MSU_IDLER_POSITION_N, []{ msu.idler_select_filament_nbr(MenuItemBase::itemIndex); });
   for (int i = 0; i < 5; ++i){
     ACTION_ITEM_N(i, MSG_MSU_IDLER_POSITION_N, []{ msu.idler_select_filament_nbr(MenuItemBase::itemIndex); });
   }
@@ -53,7 +51,7 @@ void menu_msu_set_idler_position() {
 void menu_msu() {
   START_MENU();
   BACK_ITEM(MSG_MAIN_MENU);
-  PSTRING_ITEM_P(MSG_MSU_CURRENT_TOOL, msu.char_selected_filament_nbr(), SS_FULL); 
+  PSTRING_ITEM_P(MSG_MSU_CURRENT_TOOL, msu.text_selected_filament_nbr(), SS_FULL); 
   ACTION_ITEM(MSG_MSU_IDLER_PARK_IDLER, []{ msu.idler_select_filament_nbr(-1); });
   SUBMENU(MSG_MSU_SELECT_FILAMENT, menu_msu_change_filament);
   SUBMENU(MSG_MSU_SET_IDLER_POSITION, menu_msu_set_idler_position);
