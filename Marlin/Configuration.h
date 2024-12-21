@@ -433,15 +433,15 @@
   #define MSU_SPEED 45 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
 
   #define MSU_ORIGINAL_EXTRUDER_SPEED 4  // скорость загрузки и выгрузки основного экструдера, мм/сек
-  #define MSU_PURGE_LENGTH 35 //расстояние прочистки экструдера после замены филамента
+  #define MSU_PURGE_LENGTH 20 //расстояние прочистки экструдера после замены филамента
 
   #define MSU_GEAR_LENGTH 13 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
-  #define MSU_BOWDEN_TUBE_LENGTH 140 //длина выгрузки от места резки до места перед смесителем, должно быть не больше EXTRUDE_MAXLENGTH 
+  #define MSU_BOWDEN_TUBE_LENGTH 130 //длина выгрузки от места резки до места перед смесителем, должно быть не больше EXTRUDE_MAXLENGTH 
 
    
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 100 //длина загрузка двумя экструдерами
+    #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 80 //длина загрузка двумя экструдерами
     #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 11 // MSU_SPEED // скорость загрузки двумя экструдерами
   #endif
 
@@ -455,7 +455,7 @@
     #define MSU_SERVO_CUTTER_CUT_ANGL 45 // угол позиции резки
     #define MSU_SERVO_CUTTER_PARK_ANGL 90  //угол парковки резака
     #define MSU_SERVO_CUTTER_TRY 3  // количество попыток резки
-    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 0  //сколько мм извлечь перед резкой //max 20 мм biqu h2 v2s // увеличение более 20 мм, грозит застреванием в шестернях
+    #define MSU_SERVO_CUTTER_RETRACT_LENGHT 0  //сколько мм извлечь перед резкой //max 45 мм nfs // увеличение более , грозит застреванием в шестернях
   #endif
 
   #define MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE //парковка печатной головы при смене филамента
@@ -463,18 +463,17 @@
       #define MSU_PARK_RETRACT_BEFORE_PARK_MM 1  //выполнить ретракт перед парковкой, мм
       #define MSU_PARK_RETRACT_BEFORE_PARK_FR 15 //выполнить ретракт перед парковкой, скорость мм/сек
       
-      #define MSU_PARK_EXTRUDER_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
+      #define MSU_PARK_EXTRUDER_MOVE 4 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
       #define MSU_PARK_EXTRUDER_FR 200  //XY скорость парковки печатной головы, мм/сек
-      #define MSU_PARK_EXTRUDER_POS { -4, 50} // XY кординаты парковки печатной головы
+      #define MSU_PARK_EXTRUDER_POS { 20, -7} // XY кординаты парковки печатной головы
         
       #define MSU_NOZZLE_WIPE //очистка сопла в специальную корзину во время парковки
       #if ENABLED(MSU_NOZZLE_WIPE)
         #define MSU_PARK_EXTRUDER_FOR_WIPE // после парковки, переместить в зону прочистки
-        #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 3 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
-        #define MSU_PARK_EXTRUDER_WIPE_POS { -4, -1} // XY кординаты места начала прочистки
-        
+        #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 4 // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
+        #define MSU_PARK_EXTRUDER_WIPE_POS { 20, -6} // XY кординаты места начала прочистки
         //gcode писать либо в одну строку разделяя команды \n, либо в несколько, но нужно добавить одинарный слеш 
-        //перед очисткой сопло должно находиться в X-4 Y-1
+        //перед очисткой сопло должно находиться в X15 Y-7
         //M83 включить относительную экструзию
         //G92 E0 позицию экструдера задать равной 0
         //G0 E.1 F300 выдавить 0.1 мм (5 мм/сек) //костыль, помогает избежать? странного поведения (экструзия одной командой, а затем следует резкий возврат позиции экструдера)
@@ -483,7 +482,7 @@
         //G92 E0 позицию экструдера задать равной 0
         //пройти соплом через щетку X-4 Y-1 -> X15 Y-1 (200 мм/сек)
         
-        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E20 F300\nG0 E-2 F900\nG92 E0\nG0 X15 Y-1 F12000"
+        #define MSU_NOZZLE_WIPE_CGODE "M83\nG92 E0\nG0 E.1 F300\nG0 E20 F300\nG0 E-2 F900\nG92 E0\nG0 X15 Y15 F12000"
       #endif
     #endif
 
@@ -799,9 +798,9 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    #define DEFAULT_Kp 24.23
-    #define DEFAULT_Ki 2.2
-    #define DEFAULT_Kd 66.89
+    #define DEFAULT_Kp 22.4
+    #define DEFAULT_Ki 1.89
+    #define DEFAULT_Kd 66.31
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
@@ -1354,9 +1353,10 @@
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 908} // { 160, 160, 800, 932}  //biqu
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 721.15}  //nfs
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 411.6 } //{ 160, 160, 800, 420 } //stock
 //MSU
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 927.3, 150}
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 721.15, 150}
 //MSU
 
 /**
@@ -1369,7 +1369,7 @@
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 200, 200, 10, 45 }
+#define DEFAULT_MAX_FEEDRATE          { 300, 300, 10, 45 }
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -1397,9 +1397,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          2000    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   2000    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  3000    // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk limits (mm/s)
@@ -1703,7 +1703,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { 0, -25, 0 }
+#define NOZZLE_TO_PROBE_OFFSET { -27, 0, -3 }
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
 //#define PROBING_TOOL 0
@@ -1946,12 +1946,12 @@
 // @section geometry
 
 // The size of the printable area
-#define X_BED_SIZE 310
-#define Y_BED_SIZE 310
+#define X_BED_SIZE 320
+#define Y_BED_SIZE 325
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.
-#define X_MIN_POS -5
-#define Y_MIN_POS -1
+#define X_MIN_POS 0
+#define Y_MIN_POS -7
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
@@ -2168,8 +2168,8 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-//#define AUTO_BED_LEVELING_BILINEAR
-#define AUTO_BED_LEVELING_UBL
+#define AUTO_BED_LEVELING_BILINEAR
+//#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
 
 /**
@@ -2245,7 +2245,7 @@
 #if ANY(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_X 5
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
@@ -2255,16 +2255,16 @@
 
     // Beyond the probed grid, continue the implied tilt?
     // Default is to maintain the height of the nearest edge.
-    //#define EXTRAPOLATE_BEYOND_GRID
+    #define EXTRAPOLATE_BEYOND_GRID
 
     //
     // Subdivision of the grid by Catmull-Rom method.
     // Synthesizes intermediate points to produce a more detailed mesh.
     //
-    //#define ABL_BILINEAR_SUBDIVISION
+    #define ABL_BILINEAR_SUBDIVISION
     #if ENABLED(ABL_BILINEAR_SUBDIVISION)
       // Number of subdivisions between probe points
-      #define BILINEAR_SUBDIVISIONS 3
+      #define BILINEAR_SUBDIVISIONS 2
     #endif
 
   #endif
@@ -2343,7 +2343,8 @@
 #define LCD_BED_TRAMMING
 
 #if ENABLED(LCD_BED_TRAMMING)
-  #define BED_TRAMMING_INSET_LFRB { 30, 45, 19, 40 } // (mm) Left, Front, Right, Back insets
+  //#define BED_TRAMMING_INSET_LFRB { 30, 45, 19, 40 } // (mm) Left, Front, Right, Back insets
+  #define BED_TRAMMING_INSET_LFRB { 30, 40, 28, 40 } // (mm) Left, Front, Right, Back insets
   #define BED_TRAMMING_HEIGHT      0.0        // (mm) Z height of nozzle at tramming points
   #define BED_TRAMMING_Z_HOP       4.0        // (mm) Z raise between tramming points
   //#define BED_TRAMMING_INCLUDE_CENTER       // Move to the center after the last corner
@@ -2407,7 +2408,7 @@
 #endif
 
 // Homing speeds (linear=mm/min, rotational=°/min)
-#define HOMING_FEEDRATE_MM_M { (50*60), (50*60), (6*60) }
+#define HOMING_FEEDRATE_MM_M { (50*60), (50*60), (8*60) }
 
 // Validate that endstops are triggered on homing moves
 #define VALIDATE_HOMING_ENDSTOPS
@@ -2552,11 +2553,11 @@
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
   // Specify a park position as { X, Y, Z_raise }
-  #define NOZZLE_PARK_POINT { (X_MIN_POS + 2), (Y_MIN_POS + 2), 50 }
+  #define NOZZLE_PARK_POINT { (X_MIN_POS + 5), (Y_MIN_POS + 100), 100 }
   #define NOZZLE_PARK_MOVE          3   // Park motion: 0 = XY Move, 1 = X Only, 2 = Y Only, 3 = X before Y, 4 = Y before X
   #define NOZZLE_PARK_Z_RAISE_MIN   2   // (mm) Always raise Z by at least this distance
-  #define NOZZLE_PARK_XY_FEEDRATE 150   // (mm/s) X and Y axes feedrate (also used for delta Z axis)
-  #define NOZZLE_PARK_Z_FEEDRATE    5   // (mm/s) Z axis feedrate (not used for delta printers)
+  #define NOZZLE_PARK_XY_FEEDRATE 200   // (mm/s) X and Y axes feedrate (also used for delta Z axis)
+  #define NOZZLE_PARK_Z_FEEDRATE   10   // (mm/s) Z axis feedrate (not used for delta printers)
 #endif
 
 /**
