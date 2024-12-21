@@ -43,12 +43,8 @@ void MSUMP::tool_change(uint8_t index)
   if (selected_filament_nbr == index) return; // Nothing to do
   
   //вывод сообщения на экран
-  #if ENABLED(MSU_LCD_MESSAGES) 
-      my_message.set(F("M117 Change to F"));
-      my_message.append(selected_filament_nbr+1);
-      my_message.append("- T");
-      my_message.append(selected_filament_nbr);
-      gcode.process_subcommands_now(my_message);
+  #if ENABLED(MSU_LCD_MESSAGES)
+    pre_change_lcd_message(selected_filament_nbr, index);
   #endif
 
   #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
@@ -161,11 +157,7 @@ void MSUMP::tool_change(uint8_t index)
   #endif
 
   #if ENABLED(MSU_LCD_MESSAGES) 
-      my_message.set(F("M117 F"));
-      my_message.append(selected_filament_nbr+1);
-      my_message.append("- T");
-      my_message.append(selected_filament_nbr);
-      gcode.process_subcommands_now(my_message);
+    post_change_lcd_message(selected_filament_nbr);
   #endif
 
   //возврат после смены филамента
@@ -257,11 +249,36 @@ void MSUMP::nozzle_wipe()
   gcode.process_subcommands_now(F(MSU_NOZZLE_WIPE_CGODE));
 }
 
-char * MSUMP::text_selected_filament_nbr()
+char * MSUMP::text_selected_filament_nbr() //for lcd menu
 {
    sprintf(char_arr, "%c", 'T');
    sprintf(char_arr+strlen(char_arr), "%d", selected_filament_nbr);
    return char_arr;
 }
 
+void MSUMP::pre_change_lcd_message(int a, int b)
+{
+  my_message.set(F("M117 Change T"));
+  my_message.append(a);
+  my_message.append("(F");
+  my_message.append(a+1);
+  my_message.append(")");
+  my_message.append("->");
+  my_message.append("T");
+  my_message.append(b);
+  my_message.append("(F");
+  my_message.append(b+1);
+  my_message.append(")");
+  gcode.process_subcommands_now(my_message);
+}
+
+void MSUMP::post_change_lcd_message(int a)
+{
+  my_message.set(F("M117 Selected T"));
+  my_message.append(a);
+  my_message.append("(F");
+  my_message.append(a+1);
+  my_message.append(")");
+  gcode.process_subcommands_now(my_message);
+}
 #endif											  

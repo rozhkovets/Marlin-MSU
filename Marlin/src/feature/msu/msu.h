@@ -27,6 +27,8 @@ public:
     static void nozzle_wipe();
     static void park_extruder();
     static char * text_selected_filament_nbr();
+    static void pre_change_lcd_message(int a, int b);
+    static void post_change_lcd_message(int a);
 //new
 };
 extern MSUMP msu;
