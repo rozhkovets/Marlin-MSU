@@ -430,23 +430,22 @@
   #define MSU_BEARING_ANGLES { 0, 26, 55, 84, 112, 140 } // defines the angle from on ball-bearing on the idler
 
   #define MSU_EXTRUDER_NBR 1 //define the MSU extruder motor number (as setup in your board pins file)
-  #define MSU_SPEED 45 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
+  #define MSU_SPEED 60 //unload and load speed of the MSU in mm/s, fine tuning can be done from the slicer
 
-  #define MSU_ORIGINAL_EXTRUDER_SPEED 4  // скорость загрузки и выгрузки основного экструдера, мм/сек
+  #define MSU_ORIGINAL_EXTRUDER_SPEED 5  // скорость загрузки и выгрузки основного экструдера, мм/сек
   #define MSU_PURGE_LENGTH 20 //расстояние прочистки экструдера после замены филамента
 
   #define MSU_GEAR_LENGTH 13 //for direct drive setups only, amount of retraction needed to disengage the filaments from the extruder gears
-  #define MSU_BOWDEN_TUBE_LENGTH 130 //длина выгрузки от места резки до места перед смесителем, должно быть не больше EXTRUDE_MAXLENGTH 
-
-   
+  #define MSU_BOWDEN_TUBE_LENGTH 140 //длина выгрузки от места резки до места перед смесителем, должно быть не больше EXTRUDE_MAXLENGTH 
+  
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
-    #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to 
+    #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to
     #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 80 //длина загрузка двумя экструдерами
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 11 // MSU_SPEED // скорость загрузки двумя экструдерами
+    #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 12 // MSU_SPEED // скорость загрузки двумя экструдерами
   #endif
 
   #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
-    #define MSU_EXTRUDER_STEPS_PER_MM 120 //steps per mm of the MSU, should not require any tuning. Necessary since we are using a single driver with motors that potentially have different steps per mm
+    #define MSU_EXTRUDER_STEPS_PER_MM 150 //steps per mm of the MSU, should not require any tuning. Necessary since we are using a single driver with motors that potentially have different steps per mm
   #endif
   
   #define MSU_WITH_CUTTER
@@ -1946,7 +1945,7 @@
 // @section geometry
 
 // The size of the printable area
-#define X_BED_SIZE 320
+#define X_BED_SIZE 315
 #define Y_BED_SIZE 325
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.

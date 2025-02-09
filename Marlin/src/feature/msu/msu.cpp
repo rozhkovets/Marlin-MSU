@@ -31,11 +31,14 @@ xyz_pos_t msu_park_point NOZZLE_PARK_POINT;
 constexpr feedRate_t park_fr_xy = MSU_PARK_EXTRUDER_FR;
 xyze_pos_t extruder_park_wipe_position = MSU_PARK_EXTRUDER_WIPE_POS;
 
-float steps_per_mm_correction_factor = 1;
+
 
 #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
-  steps_per_mm_correction_factor = MSU_EXTRUDER_STEPS_PER_MM / static_cast<float>(planner.settings.axis_steps_per_mm[E_AXIS]);
+  float steps_per_mm_correction_factor = MSU_EXTRUDER_STEPS_PER_MM / static_cast<float>(planner.settings.axis_steps_per_mm[E_AXIS]);
+#else
+  float steps_per_mm_correction_factor = 1;
 #endif
+
 //вызов команды T							 
 void MSUMP::tool_change(uint8_t index)
 {
@@ -170,11 +173,15 @@ void MSUMP::tool_change(uint8_t index)
 void MSUMP::move_both_extruders(float dist, const_feedRate_t speed)
 {
   // split the dist in 1mm chunks and move one extruder at a time
+  //need bug fix
+  //error in linked mode
+  #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
   for (int i = 0; i < dist; i++)
   {
     move_extruder(1, speed, MSU_EXTRUDER_NBR);
     move_extruder(1, speed, MSU_ORIGINAL_EXTRUDER_NBR);
   }
+  #endif
 }
 
 void MSUMP::move_extruder(float dist, const_feedRate_t speed, int extruder_nbr)
@@ -249,7 +256,7 @@ void MSUMP::nozzle_wipe()
   gcode.process_subcommands_now(F(MSU_NOZZLE_WIPE_CGODE));
 }
 
-char * MSUMP::text_selected_filament_nbr() //for lcd menu
+char * MSUMP::text_selected_filament_nbr() //for lcd menu - current tool
 {
    sprintf(char_arr, "%c", 'T');
    sprintf(char_arr+strlen(char_arr), "%d", selected_filament_nbr);
