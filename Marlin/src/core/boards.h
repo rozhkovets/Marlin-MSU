@@ -79,8 +79,8 @@
 #define BOARD_MKS_GEN_13              1112  // MKS GEN v1.3 or 1.4
 #define BOARD_MKS_GEN_L               1113  // MKS GEN L
 #define BOARD_KFB_2                   1114  // BigTreeTech or BIQU KFB2.0
-#define BOARD_ZRIB_V20                1115  // zrib V2.0 (Chinese RAMPS replica)
-#define BOARD_ZRIB_V52                1116  // zrib V5.2 (Chinese RAMPS replica)
+#define BOARD_ZRIB_V20                1115  // Zonestar zrib V2.0 (Chinese RAMPS replica)
+#define BOARD_ZRIB_V52                1116  // Zonestar zrib V5.2 (Chinese RAMPS replica)
 #define BOARD_ZRIB_V53                1117  // Zonestar zrib V5.3 (Chinese RAMPS replica)
 #define BOARD_FELIX2                  1118  // Felix 2.0+ Electronics Board (RAMPS like)
 #define BOARD_RIGIDBOARD              1119  // Invent-A-Part RigidBoard
@@ -170,19 +170,19 @@
 #define BOARD_GT2560_V3_A20           1319  // Geeetech GT2560 Rev B for A20(M/T/D)
 #define BOARD_GT2560_V4               1320  // Geeetech GT2560 Rev B for A10(M/T/D)
 #define BOARD_GT2560_V4_A20           1321  // Geeetech GT2560 Rev B for A20(M/T/D)
-#define BOARD_EINSTART_S              1322  // Einstart retrofit
-#define BOARD_WANHAO_ONEPLUS          1323  // Wanhao 0ne+ i3 Mini
-#define BOARD_OVERLORD                1324  // Overlord/Overlord Pro
-#define BOARD_HJC2560C_REV1           1325  // ADIMLab Gantry v1
-#define BOARD_HJC2560C_REV2           1326  // ADIMLab Gantry v2
-#define BOARD_LEAPFROG_XEED2015       1327  // Leapfrog Xeed 2015
-#define BOARD_PICA_REVB               1328  // PICA Shield (original version)
-#define BOARD_PICA                    1329  // PICA Shield (rev C or later)
-#define BOARD_INTAMSYS40              1330  // Intamsys 4.0 (Funmat HT)
-#define BOARD_MALYAN_M180             1331  // Malyan M180 Mainboard Version 2 (no display function, direct G-code only)
-#define BOARD_PROTONEER_CNC_SHIELD_V3 1332  // Mega controller & Protoneer CNC Shield V3.00
-#define BOARD_WEEDO_62A               1333  // WEEDO 62A board (TINA2, Monoprice Cadet, etc.)
-#define BOARD_GT2560_V41B             1334  // Geeetech GT2560 V4.1B for A10(M/T/D)
+#define BOARD_GT2560_V41B             1322  // Geeetech GT2560 V4.1B for A10(M/T/D)
+#define BOARD_EINSTART_S              1323  // Einstart retrofit
+#define BOARD_WANHAO_ONEPLUS          1324  // Wanhao 0ne+ i3 Mini
+#define BOARD_OVERLORD                1325  // Overlord/Overlord Pro
+#define BOARD_HJC2560C_REV1           1326  // ADIMLab Gantry v1
+#define BOARD_HJC2560C_REV2           1327  // ADIMLab Gantry v2
+#define BOARD_LEAPFROG_XEED2015       1328  // Leapfrog Xeed 2015
+#define BOARD_PICA_REVB               1329  // PICA Shield (original version)
+#define BOARD_PICA                    1330  // PICA Shield (rev C or later)
+#define BOARD_INTAMSYS40              1331  // Intamsys 4.0 (Funmat HT)
+#define BOARD_MALYAN_M180             1332  // Malyan M180 Mainboard Version 2 (no display function, direct G-code only)
+#define BOARD_PROTONEER_CNC_SHIELD_V3 1333  // Mega controller & Protoneer CNC Shield V3.00
+#define BOARD_WEEDO_62A               1334  // WEEDO 62A board (TINA2, Monoprice Cadet, etc.)
 
 //
 // ATmega1281, ATmega2561
@@ -328,6 +328,7 @@
 #define BOARD_BTT_MANTA_M5P_V1_0      4004  // BigTreeTech Manta M5P V1.0 (STM32G0B1RE)
 #define BOARD_BTT_MANTA_M8P_V1_0      4005  // BigTreeTech Manta M8P V1.0 (STM32G0B1VE)
 #define BOARD_BTT_MANTA_M8P_V1_1      4006  // BigTreeTech Manta M8P V1.1 (STM32G0B1VE)
+#define BOARD_BTT_SKRAT_V1_0          4007  // BigTreeTech SKRat V1.0 (STM32G0B1VE)
 
 //
 // STM32 ARM Cortex-M3
@@ -456,12 +457,12 @@
 #define BOARD_FYSETC_CHEETAH_V30      5235  // FYSETC Cheetah V3.0 (STM32F446RC)
 #define BOARD_TH3D_EZBOARD_V2         5236  // TH3D EZBoard v2.0 (STM32F405RG)
 #define BOARD_OPULO_LUMEN_REV3        5237  // Opulo Lumen PnP Controller REV3 (STM32F407VE / STM32F407VG)
-#define BOARD_MKS_ROBIN_NANO_V1_3_F4  5238  // MKS Robin Nano V1.3 and MKS Robin Nano-S V1.3 (STM32F407VE)
-#define BOARD_MKS_EAGLE               5239  // MKS Eagle (STM32F407VE)
-#define BOARD_ARTILLERY_RUBY          5240  // Artillery Ruby (STM32F401RC)
-#define BOARD_CREALITY_V24S1_301F4    5241  // Creality v2.4.S1_301F4 (STM32F401RC) as found in the Ender-3 S1 F4
-#define BOARD_CREALITY_CR4NTXXC10     5242  // Creality E3 Free-runs Silent Motherboard (STM32F401RET6)
-#define BOARD_OPULO_LUMEN_REV4        5243  // Opulo Lumen PnP Controller REV4 (STM32F407VE / STM32F407VG)
+#define BOARD_OPULO_LUMEN_REV4        5238  // Opulo Lumen PnP Controller REV4 (STM32F407VE / STM32F407VG)
+#define BOARD_MKS_ROBIN_NANO_V1_3_F4  5239  // MKS Robin Nano V1.3 and MKS Robin Nano-S V1.3 (STM32F407VE)
+#define BOARD_MKS_EAGLE               5240  // MKS Eagle (STM32F407VE)
+#define BOARD_ARTILLERY_RUBY          5241  // Artillery Ruby (STM32F401RC)
+#define BOARD_CREALITY_V24S1_301F4    5242  // Creality v2.4.S1_301F4 (STM32F401RC) as found in the Ender-3 S1 F4
+#define BOARD_CREALITY_CR4NTXXC10     5243  // Creality E3 Free-runs Silent Motherboard (STM32F401RET6)
 #define BOARD_FYSETC_SPIDER_KING407   5244  // FYSETC Spider King407 (STM32F407ZG)
 #define BOARD_MKS_SKIPR_V1            5245  // MKS SKIPR v1.0 all-in-one board (STM32F407VE)
 #define BOARD_TRONXY_CXY_446_V10      5246  // TRONXY CXY-446-V10-220413/CXY-V6-191121 (STM32F446ZE)
@@ -471,6 +472,11 @@
 #define BOARD_MELLOW_FLY_E3_V2        5250  // Mellow Fly E3 V2 (STM32F407VG)
 #define BOARD_BLACKBEEZMINI_V1        5251  // BlackBeezMini V1 (STM32F401CCU6)
 #define BOARD_XTLW_CLIMBER_8TH        5252  // XTLW Climber-8th (STM32F407VGT6)
+#define BOARD_FLY_RRF_E3_V1           5253  // Fly RRF E3 V1.0 (STM32F407VG)
+#define BOARD_ZNP_ROBIN_NANO          5254  // Elegoo Neptune 2 v1.2 board
+#define BOARD_ZNP_ROBIN_NANO_V1_3     5255  // Elegoo Neptune 2 v1.3 board
+#define BOARD_MKS_NEPTUNE_X           5256  // Elegoo Neptune X
+#define BOARD_MKS_NEPTUNE_3           5257  // Elegoo Neptune 3
 
 //
 // Other ARM Cortex-M4
@@ -532,6 +538,13 @@
 
 #define BOARD_AQUILA_V101             7200  // Voxelab Aquila V1.0.0/V1.0.1/V1.0.2/V1.0.3 as found in the Voxelab Aquila X2 and C2
 #define BOARD_CREALITY_ENDER2P_V24S4  7201  // Creality Ender 2 Pro v2.4.S4_170 (HC32f460kcta)
+
+//
+// Raspberry Pi
+//
+
+#define BOARD_RP2040                  6200 // Generic RP2040 Test board
+#define BOARD_BTT_SKR_PICO            6201 // BigTreeTech SKR Pico 1.x
 
 //
 // Custom board

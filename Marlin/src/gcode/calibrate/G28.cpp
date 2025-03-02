@@ -52,6 +52,10 @@
   #include "../../feature/bltouch.h"
 #endif
 
+#if FT_MOTION_DISABLE_FOR_PROBING
+  #include "../../module/ft_motion.h"
+#endif
+
 #include "../../lcd/marlinui.h"
 
 #if ENABLED(EXTENSIBLE_UI)
@@ -129,6 +133,11 @@
 #if ENABLED(Z_SAFE_HOMING)
 
   inline void home_z_safely() {
+
+    #if FT_MOTION_DISABLE_FOR_PROBING
+      FTMotionDisableInScope FT_Disabler; // Disable Fixed-Time Motion for homing
+    #endif
+
     DEBUG_SECTION(log_G28, "home_z_safely", DEBUGGING(LEVELING));
 
     // Disallow Z homing if X or Y homing is needed
@@ -284,6 +293,10 @@ void GcodeSuite::G28() {
       motion_state_t saved_motion_state = begin_slow_homing();
     #endif
 
+    #if FT_MOTION_DISABLE_FOR_PROBING
+      FTMotionDisableInScope FT_Disabler; // Disable Fixed-Time Motion for homing
+    #endif
+
     // Always home with tool 0 active
     #if HAS_MULTI_HOTEND
       #if DISABLED(DELTA) || ENABLED(DELTA_HOME_TO_SAFE_ZONE)
@@ -322,9 +335,9 @@ void GcodeSuite::G28() {
 
     #else // !DELTA && !AXEL_TPARA
 
-      #define _UNSAFE(A) TERN0(Z_SAFE_HOMING, homeZ && axis_should_home(_AXIS(A)))
+      #define _UNSAFE(A) TERN0(Z_SAFE_HOMING, homeZZ && axis_should_home(_AXIS(A)))
 
-      const bool homeZ = TERN0(HAS_Z_AXIS, parser.seen_test('Z')),
+      const bool homeZZ = TERN0(HAS_Z_AXIS, parser.seen_test('Z')),
                  NUM_AXIS_LIST_(             // Other axes should be homed before Z safe-homing
                    needX = _UNSAFE(X), needY = _UNSAFE(Y), needZ = false, // UNUSED
                    needI = _UNSAFE(I), needJ = _UNSAFE(J), needK = _UNSAFE(K),
@@ -333,7 +346,7 @@ void GcodeSuite::G28() {
                  NUM_AXIS_LIST_(             // Home each axis if needed or flagged
                    homeX = needX || parser.seen_test('X'),
                    homeY = needY || parser.seen_test('Y'),
-                   homeZZ = homeZ,
+                   homeZ = homeZZ,
                    homeI = needI || parser.seen_test(AXIS4_NAME), homeJ = needJ || parser.seen_test(AXIS5_NAME),
                    homeK = needK || parser.seen_test(AXIS6_NAME), homeU = needU || parser.seen_test(AXIS7_NAME),
                    homeV = needV || parser.seen_test(AXIS8_NAME), homeW = needW || parser.seen_test(AXIS9_NAME)
@@ -355,7 +368,7 @@ void GcodeSuite::G28() {
 
       #if HAS_Z_AXIS
 
-        UNUSED(needZ); UNUSED(homeZZ);
+        UNUSED(needZ);
 
         // Z may home first, e.g., when homing away from the bed.
         // This is also permitted when homing with a Z endstop.
@@ -439,8 +452,7 @@ void GcodeSuite::G28() {
 
       #if HAS_Y_AXIS
         // Home Y (after X)
-        if (DISABLED(HOME_Y_BEFORE_X) && doY)
-          homeaxis(Y_AXIS);
+        if (DISABLED(HOME_Y_BEFORE_X) && doY) homeaxis(Y_AXIS);
       #endif
 
       #if ALL(FOAMCUTTER_XYUV, HAS_J_AXIS)

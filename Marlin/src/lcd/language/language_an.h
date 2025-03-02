@@ -155,11 +155,19 @@ namespace LanguageNarrow_an {
   LSTR MSG_AUTORETRACT                    = _UxGT("Retraccion auto.");
   LSTR MSG_FILAMENTCHANGE                 = _UxGT("Cambear filamento");
   LSTR MSG_FILAMENTCHANGE_E               = _UxGT("Cambear filamento *");
-  LSTR MSG_ATTACH_MEDIA                   = _UxGT("Encetan. tarcheta");
+  #if HAS_MULTI_VOLUME
+    LSTR MSG_ATTACH_SD_MEDIA              = _UxGT("Encetan. SD");
+    LSTR MSG_ATTACH_USB_MEDIA             = _UxGT("Encetan. USB");
+  #else
+    LSTR MSG_ATTACH_MEDIA                 = _UxGT("Encetan. SD");
+  #endif
   LSTR MSG_CHANGE_MEDIA                   = _UxGT("Cambiar tarcheta");
   LSTR MSG_ZPROBE_OUT                     = _UxGT("Sonda Z fuera");
   LSTR MSG_BLTOUCH_RESET                  = _UxGT("Reset BLTouch");
+  LSTR MSG_ZPROBE_XOFFSET                 = _UxGT("Desfase X");
+  LSTR MSG_ZPROBE_YOFFSET                 = _UxGT("Desfase Y");
   LSTR MSG_ZPROBE_ZOFFSET                 = _UxGT("Desfase Z");
+  LSTR MSG_ZPROBE_OFFSET_N                = _UxGT("Desfase @");
   LSTR MSG_BABYSTEP_PROBE_Z               = _UxGT("Probe Z con pas");
   LSTR MSG_BABYSTEP_X                     = _UxGT("Micropaso X");
   LSTR MSG_BABYSTEP_Y                     = _UxGT("Micropaso Y");

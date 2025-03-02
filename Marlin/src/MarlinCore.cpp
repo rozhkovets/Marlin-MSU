@@ -232,8 +232,8 @@
 #endif
 
 #if HAS_PRUSA_MMU3
-  #include "feature/mmu3/mmu2.h"
-  #include "feature/mmu3/mmu2_reporting.h"
+  #include "feature/mmu3/mmu3.h"
+  #include "feature/mmu3/mmu3_reporting.h"
   #include "feature/mmu3/SpoolJoin.h"
 #elif HAS_PRUSA_MMU2
   #include "feature/mmu/mmu2.h"
@@ -815,7 +815,7 @@ void idle(const bool no_stepper_sleep/*=false*/) {
   TERN_(HAS_MEDIA, card.manage_media());
 
   // Handle USB Flash Drive insert / remove
-  TERN_(USB_FLASH_DRIVE_SUPPORT, card.diskIODriver()->idle());
+  TERN_(HAS_USB_FLASH_DRIVE, card.diskIODriver()->idle());
 
   // Announce Host Keepalive state (if any)
   TERN_(HOST_KEEPALIVE_FEATURE, gcode.host_keepalive());
@@ -1258,7 +1258,7 @@ void setup() {
     SETUP_RUN(runout.setup());
   #endif
 
-  #if HAS_TMC220x
+  #if HAS_TMC_UART
     SETUP_RUN(tmc_serial_begin());
   #endif
 
