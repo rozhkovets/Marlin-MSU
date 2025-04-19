@@ -116,7 +116,6 @@
 #endif
 
 //MSU
-
 #if HAS_CUTTER
   #include "../feature/spindle_laser.h"
 #endif
@@ -165,7 +164,7 @@ uint32_t Planner::max_acceleration_steps_per_s2[DISTINCT_AXES]; // (steps/s^2) D
     float Planner::max_e_jerk[DISTINCT_E];      // Calculated from junction_deviation_mm
   #endif
 #else // CLASSIC_JERK
-  TERN(HAS_LINEAR_E_JERK, xyz_pos_t, xyze_pos_t) Planner::max_jerk;
+  xyze_pos_t Planner::max_jerk;
 #endif
 
 #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
@@ -788,7 +787,7 @@ block_t* Planner::get_current_block() {
  * by the provided factors. If entry_factor is 0 don't change the initial_rate.
  * Assumes that the implied initial_rate and final_rate are no less than
  * sqrt(block->acceleration_steps_per_s2 / 2). This is ensured through
- * minimum_planner_speed_sqr / min_entry_speed_sqr though note there's one
+ * minimum_planner_speed_sqr / min_entry_speed_sqr - but there's one
  * exception in recalculate_trapezoids().
  *
  * ############ VERY IMPORTANT ############
@@ -862,6 +861,8 @@ void Planner::calculate_trapezoid_for_block(block_t * const block, const_float_t
   block->accelerate_before = accelerate_steps;
   block->decelerate_start = block->step_event_count - decelerate_steps;
   block->initial_rate = initial_rate;
+  block->final_rate = final_rate;
+
   #if ENABLED(S_CURVE_ACCELERATION)
     block->acceleration_time = acceleration_time;
     block->deceleration_time = deceleration_time;
@@ -869,7 +870,6 @@ void Planner::calculate_trapezoid_for_block(block_t * const block, const_float_t
     block->deceleration_time_inverse = deceleration_time_inverse;
     block->cruise_rate = cruise_rate;
   #endif
-  block->final_rate = final_rate;
 
   #if ENABLED(LIN_ADVANCE)
     if (block->la_advance_rate) {
@@ -900,30 +900,29 @@ void Planner::calculate_trapezoid_for_block(block_t * const block, const_float_t
      * Laser Trap Power works for all Jerk and Curve modes; however Arc-based moves will have issues since
      * the segments are usually too small.
      */
-    if (cutter.cutter_mode == CUTTER_MODE_CONTINUOUS) {
-      if (planner.laser_inline.status.isPowered && planner.laser_inline.status.isEnabled) {
-        if (block->laser.power > 0) {
-          NOLESS(block->laser.power, laser_power_floor);
-          block->laser.trap_ramp_active_pwr = (block->laser.power - laser_power_floor) * (initial_rate / float(block->nominal_rate)) + laser_power_floor;
-          block->laser.trap_ramp_entry_incr = (block->laser.power - block->laser.trap_ramp_active_pwr) / accelerate_steps;
-          float laser_pwr = block->laser.power * (final_rate / float(block->nominal_rate));
-          NOLESS(laser_pwr, laser_power_floor);
-          block->laser.trap_ramp_exit_decr = (block->laser.power - laser_pwr) / decelerate_steps;
-          #if ENABLED(DEBUG_LASER_TRAP)
-            SERIAL_ECHO_MSG("lp:",block->laser.power);
-            SERIAL_ECHO_MSG("as:",accelerate_steps);
-            SERIAL_ECHO_MSG("ds:",decelerate_steps);
-            SERIAL_ECHO_MSG("p.trap:",block->laser.trap_ramp_active_pwr);
-            SERIAL_ECHO_MSG("p.incr:",block->laser.trap_ramp_entry_incr);
-            SERIAL_ECHO_MSG("p.decr:",block->laser.trap_ramp_exit_decr);
-          #endif
-        }
-        else {
-          block->laser.trap_ramp_active_pwr = 0;
-          block->laser.trap_ramp_entry_incr = 0;
-          block->laser.trap_ramp_exit_decr = 0;
-        }
-
+    if (cutter.cutter_mode == CUTTER_MODE_CONTINUOUS
+      && planner.laser_inline.status.isPowered && planner.laser_inline.status.isEnabled
+    ) {
+      if (block->laser.power > 0) {
+        NOLESS(block->laser.power, laser_power_floor);
+        block->laser.trap_ramp_active_pwr = (block->laser.power - laser_power_floor) * (initial_rate / float(block->nominal_rate)) + laser_power_floor;
+        block->laser.trap_ramp_entry_incr = (block->laser.power - block->laser.trap_ramp_active_pwr) / accelerate_steps;
+        float laser_pwr = block->laser.power * (final_rate / float(block->nominal_rate));
+        NOLESS(laser_pwr, laser_power_floor);
+        block->laser.trap_ramp_exit_decr = (block->laser.power - laser_pwr) / decelerate_steps;
+        #if ENABLED(DEBUG_LASER_TRAP)
+          SERIAL_ECHO_MSG("lp:", block->laser.power);
+          SERIAL_ECHO_MSG("as:", accelerate_steps);
+          SERIAL_ECHO_MSG("ds:", decelerate_steps);
+          SERIAL_ECHO_MSG("p.trap:", block->laser.trap_ramp_active_pwr);
+          SERIAL_ECHO_MSG("p.incr:", block->laser.trap_ramp_entry_incr);
+          SERIAL_ECHO_MSG("p.decr:", block->laser.trap_ramp_exit_decr);
+        #endif
+      }
+      else {
+        block->laser.trap_ramp_active_pwr = 0;
+        block->laser.trap_ramp_entry_incr = 0;
+        block->laser.trap_ramp_exit_decr = 0;
       }
     }
   #endif // LASER_POWER_TRAP
@@ -1590,7 +1589,9 @@ void Planner::quick_stop() {
   const bool was_enabled = stepper.suspend();
 
   // Drop all queue entries
-  block_buffer_nonbusy = block_buffer_head = block_buffer_tail;
+  const uint8_t tail_value = block_buffer_tail; // Read tail value once
+  block_buffer_head = tail_value;
+  block_buffer_nonbusy = tail_value;
 
   // Restart the block delay for the first movement - As the queue was
   // forced to empty, there's no risk the ISR will touch this.
@@ -2452,7 +2453,7 @@ bool Planner::_populate_block(
   block->acceleration_steps_per_s2 = accel;
   block->acceleration = accel / steps_per_mm;
   #if DISABLED(S_CURVE_ACCELERATION)
-    block->acceleration_rate = (uint32_t)(accel * (float(1UL << 24) / (STEPPER_TIMER_RATE)));
+    block->acceleration_rate = uint32_t(accel * (float(1UL << 24) / (STEPPER_TIMER_RATE)));
   #endif
 
   #if ENABLED(LIN_ADVANCE)
@@ -2460,10 +2461,10 @@ bool Planner::_populate_block(
     block->la_scaling = 0;
 
     if (use_advance_lead) {
-      // the Bresenham algorithm will convert this step rate into extruder steps
+      // The Bresenham algorithm will convert this step rate into extruder steps
       block->la_advance_rate = extruder_advance_K[E_INDEX_N(extruder)] * block->acceleration_steps_per_s2;
 
-      // reduce LA ISR frequency by calling it only often enough to ensure that there will
+      // Reduce LA ISR frequency by calling it only often enough to ensure that there will
       // never be more than four extruder steps per call
       for (uint32_t dividend = block->steps.e << 1; dividend <= (block->step_event_count >> 2); dividend <<= 1)
         block->la_scaling++;
@@ -2473,7 +2474,7 @@ bool Planner::_populate_block(
           SERIAL_ECHOLNPGM("eISR running at > 10kHz: ", block->la_advance_rate);
       #endif
     }
-  #endif
+  #endif // LIN_ADVANCE
 
   // Formula for the average speed over a 1 step worth of distance if starting from zero and
   // accelerating at the current limit. Since we can only change the speed every step this is a

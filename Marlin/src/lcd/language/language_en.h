@@ -69,7 +69,7 @@ namespace LanguageNarrow_en {
   LSTR LANGUAGE                           = _UxGT("English");
 
   // These strings should be translated
-  LSTR WELCOME_MSG                        = MACHINE_NAME _UxGT(" Ready.");
+  LSTR WELCOME_MSG                        = MACHINE_NAME_SUBST _UxGT(" Ready.");
   LSTR MSG_YES                            = _UxGT("YES");
   LSTR MSG_NO                             = _UxGT("NO");
   LSTR MSG_HIGH                           = _UxGT("HIGH");
@@ -155,6 +155,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_PREHEAT_M_END_E                = _UxGT("Preheat $ End ~");
   LSTR MSG_PREHEAT_M_ALL                  = _UxGT("Preheat $ All");
   LSTR MSG_PREHEAT_M_BEDONLY              = _UxGT("Preheat $ Bed");
+  LSTR MSG_PREHEAT_M_CHAMBER              = _UxGT("Preheat $ Chmb");
   LSTR MSG_PREHEAT_M_SETTINGS             = _UxGT("Preheat $ Conf");
 
   LSTR MSG_PREHEAT_HOTEND                 = _UxGT("Preheat Hotend");
@@ -197,6 +198,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_MESH_VIEWER                    = _UxGT("Mesh Viewer");
   LSTR MSG_EDIT_MESH                      = _UxGT("Edit Mesh");
   LSTR MSG_MESH_VIEW                      = _UxGT("View Mesh");
+  LSTR MSG_MESH_VIEW_GRID                 = _UxGT("View Mesh (grid)");
   LSTR MSG_EDITING_STOPPED                = _UxGT("Mesh Editing Stopped");
   LSTR MSG_NO_VALID_MESH                  = _UxGT("No valid mesh");
   LSTR MSG_ACTIVATE_MESH                  = _UxGT("Activate Leveling");
@@ -220,7 +222,9 @@ namespace LanguageNarrow_en {
   LSTR MSG_M48_TEST                       = _UxGT("M48 Probe Test");
   LSTR MSG_M48_POINT                      = _UxGT("M48 Point");
   LSTR MSG_M48_OUT_OF_BOUNDS              = _UxGT("Probe out of bounds");
+  LSTR MSG_M48_DEV                        = _UxGT("Dev");
   LSTR MSG_M48_DEVIATION                  = _UxGT("Deviation");
+  LSTR MSG_M48_MAX_DELTA                  = _UxGT("Max delta");
   LSTR MSG_IDEX_MENU                      = _UxGT("IDEX Mode");
   LSTR MSG_OFFSETS_MENU                   = _UxGT("Tool Offsets");
   LSTR MSG_IDEX_MODE_AUTOPARK             = _UxGT("Auto-Park");
@@ -448,6 +452,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_AMAX_EN                        = _UxGT("Max * Accel");
   LSTR MSG_A_RETRACT                      = _UxGT("Retract Accel");
   LSTR MSG_A_TRAVEL                       = _UxGT("Travel Accel");
+  LSTR MSG_A_SPINDLE                      = _UxGT("Spindle Accel");
   LSTR MSG_INPUT_SHAPING                  = _UxGT("Input Shaping");
   LSTR MSG_SHAPING_ENABLE_N               = _UxGT("Enable @ shaping");
   LSTR MSG_SHAPING_DISABLE_N              = _UxGT("Disable @ shaping");
@@ -805,7 +810,6 @@ namespace LanguageNarrow_en {
   LSTR MSG_MSU_CUT_FILAMENT                = _UxGT("Cut filament");
   LSTR MSG_MSU_CURRENT_TOOL                = _UxGT("Current T");
 //MSU
-
   LSTR MSG_MMU_SENSITIVITY                = _UxGT("Sensitivity");
   LSTR MSG_MMU_CUTTER                     = _UxGT("Cutter");
   LSTR MSG_MMU_CUTTER_MODE                = _UxGT("Cutter Mode");
@@ -885,6 +889,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_FILAMENT_CHANGE_PURGE          = _UxGT(MSG_1_LINE("Purging..."));
   LSTR MSG_FILAMENT_CHANGE_CONT_PURGE     = _UxGT(MSG_1_LINE("Click to finish"));
   LSTR MSG_FILAMENT_CHANGE_RESUME         = _UxGT(MSG_1_LINE("Resuming..."));
+
   LSTR MSG_TMC_DRIVERS                    = _UxGT("TMC Drivers");
   LSTR MSG_TMC_CURRENT                    = _UxGT("Driver Current");
   LSTR MSG_TMC_ACURRENT                   = STR_A _UxGT("Driver Current");
@@ -894,7 +899,9 @@ namespace LanguageNarrow_en {
   LSTR MSG_TMC_HYBRID_THRS                = _UxGT("Hybrid Threshold");
   LSTR MSG_TMC_HOMING_THRS                = _UxGT("Sensorless Homing");
   LSTR MSG_TMC_STEPPING_MODE              = _UxGT("Stepping Mode");
-  LSTR MSG_TMC_STEALTH_ENABLED            = _UxGT("StealthChop Enabled");
+  LSTR MSG_TMC_STEALTHCHOP                = _UxGT("StealthChop");
+  LSTR MSG_TMC_HOMING_CURRENT             = _UxGT("Homing Current");
+
   LSTR MSG_SERVICE_RESET                  = _UxGT("Reset");
   LSTR MSG_SERVICE_IN                     = _UxGT(" in:");
   LSTR MSG_BACKLASH                       = _UxGT("Backlash");
@@ -902,7 +909,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_BACKLASH_SMOOTHING             = _UxGT("Smoothing");
 
   LSTR MSG_FIXED_TIME_MOTION              = _UxGT("Fixed-Time Motion");
-  LSTR MSG_FTM_CMPN_MODE                  = _UxGT("@ Comp. Mode:");
+  LSTR MSG_FTM_CMPN_MODE                  = _UxGT("@ Comp. Mode: $");
   LSTR MSG_FTM_ZV                         = _UxGT("ZV");
   LSTR MSG_FTM_ZVD                        = _UxGT("ZVD");
   LSTR MSG_FTM_ZVDD                       = _UxGT("ZVDD");
@@ -913,7 +920,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_FTM_MZV                        = _UxGT("MZV");
   //LSTR MSG_FTM_ULENDO_FBS               = _UxGT("Ulendo FBS");
   //LSTR MSG_FTM_DISCTF                   = _UxGT("DISCTF");
-  LSTR MSG_FTM_DYN_MODE                   = _UxGT("DF Mode:");
+  LSTR MSG_FTM_DYN_MODE                   = _UxGT("DF Mode: $");
   LSTR MSG_FTM_Z_BASED                    = _UxGT("Z-based");
   LSTR MSG_FTM_MASS_BASED                 = _UxGT("Mass-based");
   LSTR MSG_FTM_BASE_FREQ_N                = _UxGT("@ Base Freq.");
@@ -939,10 +946,11 @@ namespace LanguageNarrow_en {
 
   LSTR MSG_SOUND                          = _UxGT("Sound");
 
-  LSTR MSG_TOP_LEFT                       = _UxGT("Top Left");
-  LSTR MSG_BOTTOM_LEFT                    = _UxGT("Bottom Left");
-  LSTR MSG_TOP_RIGHT                      = _UxGT("Top Right");
-  LSTR MSG_BOTTOM_RIGHT                   = _UxGT("Bottom Right");
+  LSTR MSG_TOP_LEFT                       = _UxGT("Touch Top Left");
+  LSTR MSG_BOTTOM_LEFT                    = _UxGT("Touch Bottom Left");
+  LSTR MSG_TOP_RIGHT                      = _UxGT("Touch Top Right");
+  LSTR MSG_BOTTOM_RIGHT                   = _UxGT("Touch Bottom Right");
+  LSTR MSG_TOUCH_CALIBRATION              = _UxGT("Touch Calibration");
   LSTR MSG_CALIBRATION_COMPLETED          = _UxGT("Calibration Completed");
   LSTR MSG_CALIBRATION_FAILED             = _UxGT("Calibration Failed");
 
@@ -1123,6 +1131,8 @@ namespace LanguageWide_en {
     LSTR MSG_HOMING_FEEDRATE_Y            = _UxGT("Y Homing Feedrate");
     LSTR MSG_HOMING_FEEDRATE_Z            = _UxGT("Z Homing Feedrate");
     LSTR MSG_EEPROM_INITIALIZED           = _UxGT("Default Settings Restored");
+    LSTR MSG_PREHEAT_M_CHAMBER            = _UxGT("Preheat $ Chamber");
+    LSTR MSG_PREHEAT_M_SETTINGS           = _UxGT("Preheat $ Config");
   #endif
 }
 

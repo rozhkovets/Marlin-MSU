@@ -91,7 +91,6 @@
 #endif 
 
 //MSU
-
 #if HAS_MARLINUI_MENU
   #include "../lcd/marlinui.h"
 #endif
@@ -1146,12 +1145,11 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
 
 //MSU
 
-  #elif ENABLED(MSU)
-  
-    msu.tool_change(new_tool);
+#if ENABLED(MSU)
+  #include "../feature/msu/msu.h"
+#endif 
 
 //MSU
-
   #elif EXTRUDERS == 0
 
     // Nothing to do

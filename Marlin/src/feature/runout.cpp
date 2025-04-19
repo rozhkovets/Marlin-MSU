@@ -52,7 +52,6 @@ bool FilamentMonitorBase::enabled = true,
 #endif
 
 //MSU
-
 #if HAS_FILAMENT_RUNOUT_DISTANCE
   float RunoutResponseDelayed::runout_distance_mm = FILAMENT_RUNOUT_DISTANCE_MM;
   countdown_t RunoutResponseDelayed::mm_countdown;
@@ -104,7 +103,6 @@ void event_filament_runout(const uint8_t extruder) {
     msu.filament_runout();
   #endif*/
 //MSU
-
   //action:out_of_filament
   #if ENABLED(HOST_PROMPT_SUPPORT)
     hostui.prompt_do(PROMPT_FILAMENT_RUNOUT, F("FilamentRunout T"), tool); //action:out_of_filament
