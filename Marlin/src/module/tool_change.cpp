@@ -90,7 +90,7 @@
   #include "../feature/msu/msu.h"
 #endif 
 
-//MSU
+//MSU	 
 #if HAS_MARLINUI_MENU
   #include "../lcd/marlinui.h"
 #endif
@@ -1145,11 +1145,11 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
 
 //MSU
 
-#if ENABLED(MSU)
-  #include "../feature/msu/msu.h"
-#endif 
+  #elif ENABLED(MSU)
+  
+    msu.tool_change(new_tool);
 
-//MSU
+//MSU	 
   #elif EXTRUDERS == 0
 
     // Nothing to do
@@ -1429,6 +1429,12 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       #endif
 
     } // (new_tool != old_tool)
+    else {
+      // For switching-nozzle-with-servos you may have manually-edited servo angles
+      // or other functions that can affect angles. So here we ensure a T# command
+      // restores active tool position even when recalling the same tool.
+      TERN_(SWITCHING_NOZZLE_TWO_SERVOS, lower_nozzle(new_tool));
+    }
 
     planner.synchronize();
 
@@ -1595,7 +1601,7 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
     #endif
 
     // Migrate Linear Advance K factor to the new extruder
-    TERN_(LIN_ADVANCE, planner.extruder_advance_K[active_extruder] = planner.extruder_advance_K[migration_extruder]);
+    TERN_(LIN_ADVANCE, planner.set_advance_k(planner.get_advance_k(migration_extruder), active_extruder));
 
     // Temporary migration toolchange_settings restored on exit. i.e., before next tool_change().
     #if defined(MIGRATION_FS_EXTRA_PRIME) \
