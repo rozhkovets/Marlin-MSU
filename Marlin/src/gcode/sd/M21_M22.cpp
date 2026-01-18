@@ -28,7 +28,7 @@
 #include "../../sd/cardreader.h"
 
 /**
- * M21: Mount Media
+ * M21: Init SD Card
  *
  * With MULTI_VOLUME:
  *  P0 or S - Change to the SD Card and mount it
@@ -38,18 +38,18 @@ void GcodeSuite::M21() {
   #if HAS_MULTI_VOLUME
     const int8_t vol = parser.intval('P', -1);
     if (vol == 0 || parser.seen_test('S'))       // "S" for SD Card
-      card.selectMediaSDCard();
+      card.changeMedia(&card.media_driver_sdcard);
     else if (vol == 1 || parser.seen_test('U'))  // "U" for USB
-      card.selectMediaFlashDrive();
+      card.changeMedia(&card.media_driver_usbFlash);
   #endif
   card.mount();
 }
 
 /**
- * M22: Release Media
+ * M22: Release SD Card
  */
 void GcodeSuite::M22() {
-  if (!card.isStillPrinting()) card.release();
+  if (!IS_SD_PRINTING()) card.release();
 }
 
 #endif // HAS_MEDIA

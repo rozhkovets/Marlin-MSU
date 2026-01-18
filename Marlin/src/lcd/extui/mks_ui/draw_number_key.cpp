@@ -243,10 +243,10 @@ static void set_value_confirm() {
     #if HAS_Z_AXIS
       case ZMaxFeedRate:  planner.settings.max_feedrate_mm_s[Z_AXIS] = atof(key_value); break;
     #endif
-    #if HAS_EXTRUDERS
+    #if HAS_E0_AXIS
       case E0MaxFeedRate: planner.settings.max_feedrate_mm_s[E_AXIS] = atof(key_value); break;
     #endif
-    #if HAS_MULTI_EXTRUDER
+    #if HAS_E1_AXIS
       case E1MaxFeedRate: planner.settings.max_feedrate_mm_s[E_AXIS_N(1)] = atof(key_value); break;
     #endif
 

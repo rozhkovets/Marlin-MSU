@@ -105,7 +105,7 @@ extern "C" char* dtostrf(double val, signed char width, unsigned char prec, char
 class MarlinHAL {
 public:
   // Before setup()
-  MarlinHAL() = default;
+  MarlinHAL() {}
 
   // Watchdog
   static void watchdog_init()    IF_DISABLED(USE_WATCHDOG, {});

@@ -66,14 +66,24 @@
 //
 // Limit Switches
 //
-#ifndef X_STOP_PIN
-  #define X_STOP_PIN                  X_DIAG_PIN  // X-STOP
+#ifdef X_STALL_SENSITIVITY
+  #define X_STOP_PIN                  X_DIAG_PIN
+#else
+  #define X_STOP_PIN                        PE7   // X-STOP
 #endif
-#ifndef Y_STOP_PIN
-  #define Y_STOP_PIN                  Y_DIAG_PIN  // Y-STOP
+
+#ifdef Y_STALL_SENSITIVITY
+  #define Y_STOP_PIN                  Y_DIAG_PIN
+#else
+  #define Y_STOP_PIN                        PE8   // Y-STOP
 #endif
-#ifndef Z_STOP_PIN
-  #define Z_STOP_PIN                  Z_DIAG_PIN  // Z-STOP
+
+#ifdef Z_STALL_SENSITIVITY
+  #define Z_STOP_PIN                  Z_DIAG_PIN
+#else
+  #ifndef Z_STOP_PIN
+    #define Z_STOP_PIN                      PE9   // Z-STOP
+  #endif
 #endif
 
 //

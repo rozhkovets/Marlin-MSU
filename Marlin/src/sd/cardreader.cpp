@@ -132,24 +132,17 @@ int16_t CardReader::nrItems = -1;
 
 #endif // SDCARD_SORT_ALPHA
 
-#if HAS_SDCARD
-  CardReader::sdcard_driver_t CardReader::media_driver_sdcard;
-#endif
-
 #if HAS_USB_FLASH_DRIVE
   DiskIODriver_USBFlash CardReader::media_driver_usbFlash;
 #endif
 
-DiskIODriver* CardReader::driver = (
-  #if HAS_USB_FLASH_DRIVE && !DEFAULT_VOLUME_IS(SD_ONBOARD)
-    &CardReader::media_driver_usbFlash
-  #else
-    &CardReader::media_driver_sdcard
-  #endif
-);
+#if NEED_SD2CARD_SDIO || NEED_SD2CARD_SPI
+  CardReader::sdcard_driver_t CardReader::media_driver_sdcard;
+#endif
 
+DiskIODriver* CardReader::driver = nullptr;
 MarlinVolume CardReader::volume;
-MediaFile CardReader::myfile;
+MediaFile CardReader::file;
 
 #if HAS_MEDIA_SUBCALLS
   uint8_t CardReader::file_subcall_ctr;
@@ -160,6 +153,14 @@ MediaFile CardReader::myfile;
 uint32_t CardReader::filesize, CardReader::sdpos;
 
 CardReader::CardReader() {
+  changeMedia(&
+    #if HAS_USB_FLASH_DRIVE && !SHARED_VOLUME_IS(SD_ONBOARD)
+      media_driver_usbFlash
+    #else
+      media_driver_sdcard
+    #endif
+  );
+
   #if ENABLED(SDCARD_SORT_ALPHA)
     sort_count = 0;
     #if ENABLED(SDSORT_GCODE)
@@ -460,9 +461,9 @@ void CardReader::ls(const uint8_t lsflags/*=0*/) {
 // Echo the DOS 8.3 filename (and long filename, if any)
 //
 void CardReader::printSelectedFilename() {
-  if (myfile.isOpen()) {
+  if (file.isOpen()) {
     char dosFilename[FILENAME_LENGTH];
-    myfile.getDosName(dosFilename);
+    file.getDosName(dosFilename);
     SERIAL_ECHO(dosFilename);
     #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
       selectFileByName(dosFilename);
@@ -480,15 +481,11 @@ void CardReader::mount() {
   nrItems = -1;
   if (root.isOpen()) root.close();
 
-  const bool driver_init = (
-    driver->init(SD_SPI_SPEED, SD_SS_PIN)
+  if (!driver->init(SD_SPI_SPEED, SD_SS_PIN)
     #if PIN_EXISTS(LCD_SDSS) && (LCD_SDSS_PIN != SD_SS_PIN)
-      || driver->init(SD_SPI_SPEED, LCD_SDSS_PIN)
+      && !driver->init(SD_SPI_SPEED, LCD_SDSS_PIN)
     #endif
-  );
-
-  if (!driver_init)
-    SERIAL_ECHO_MSG(STR_SD_INIT_FAIL);
+  ) SERIAL_ECHO_MSG(STR_SD_INIT_FAIL);
   else if (!volume.init(driver))
     SERIAL_WARN_MSG(STR_SD_VOL_INIT_FAIL);
   else if (!root.openRoot(&volume))
@@ -502,14 +499,7 @@ void CardReader::mount() {
     cdroot();
   else {
     #if ANY(HAS_SD_DETECT, HAS_USB_FLASH_DRIVE)
-      if (marlin_state != MarlinState::MF_INITIALIZING) {
-        if (isSDCardSelected())
-          LCD_ALERTMESSAGE(MSG_MEDIA_INIT_FAIL_SD);
-        else if (isFlashDriveSelected())
-          LCD_ALERTMESSAGE(MSG_MEDIA_INIT_FAIL_USB);
-        else
-          LCD_ALERTMESSAGE(MSG_MEDIA_INIT_FAIL);
-      }
+      if (marlin_state != MarlinState::MF_INITIALIZING) LCD_ALERTMESSAGE(MSG_MEDIA_INIT_FAIL);
     #endif
   }
 
@@ -520,150 +510,65 @@ void CardReader::mount() {
   #include "../module/stepper.h"
 #endif
 
-// Provide a little time for drives to prepare
-void CardReader::init() {
-  #if HAS_USB_FLASH_DRIVE
-    for (uint8_t i = 10; --i;) {
-      media_driver_usbFlash.idle();
-      hal.watchdog_refresh();
-      if (media_driver_usbFlash.isInserted()) break;
-      delay(20);
-    }
-  #endif
-}
-
 /**
- * Handle media insertion and removal events
- * based on SD Card detect and/or driver.isInserted()
- *
- * MULTI_VOLUME:
- *  - Track insert/remove for both media drives.
- *  - If the MOUNTED media is removed call release().
- *  - If media is INSERTED when NO MEDIA is mounted, select and mount it.
+ * Handle SD card events
  */
 void CardReader::manage_media() {
-  /**
-   * Handle device tasks (e.g., USB Drive insert / remove)
-   *  - USB Flash Drive needs to run even when not selected.
-   *  - SD Card currently has no background tasks.
-   */
-  //driver->idle();
-  #if HAS_USB_FLASH_DRIVE
-    //if (!isFlashDriveSelected())
-      media_driver_usbFlash.idle();
-  #endif
-
-  // Prevent re-entry during Marlin::idle
-  #if HAS_MULTI_VOLUME
-    static bool no_reenter = false;
-    if (no_reenter) return;
-  #endif
-
-  static MediaPresence prev_stat = MEDIA_BOOT;  // At boot we don't know if media is present or not
-
-  // Live status is based on available media flags
-  MediaPresence stat = MediaPresence(
-    #if HAS_MULTI_VOLUME
-        (isSDCardInserted()     ? INSERT_SD  : 0) // Without SD Detect it's always "inserted"
-      | (isFlashDriveInserted() ? INSERT_USB : 0)
-    #else
-      isInserted() ? INSERT_MEDIA : 0             // Without SD Detect it's always "inserted"
-    #endif
-  );
-
+  static uint8_t prev_stat = 2;     // At boot we don't know if media is present or not
+  uint8_t stat = uint8_t(IS_SD_INSERTED());
   if (stat == prev_stat) return;    // Already checked and still no change?
 
   DEBUG_SECTION(cmm, "CardReader::manage_media()", true);
   DEBUG_ECHOLNPGM("Media present: ", prev_stat, " -> ", stat);
 
-  // Without a UI there's no auto-mount or release
-  if (!ui.detected()) { DEBUG_ECHOLNPGM("SD: No UI Detected."); return; }
+  if (!ui.detected()) {
+    DEBUG_ECHOLNPGM("SD: No UI Detected.");
+    return;
+  }
 
-  const MediaPresence old_stat = prev_stat,
-                      old_real = old_stat == MEDIA_BOOT ? INSERT_NONE : old_stat;
+  flag.workDirIsRoot = true;        // Return to root on mount/release/init
+
+  const uint8_t old_stat = prev_stat;
   prev_stat = stat;                 // Change now to prevent re-entry in safe_delay
 
-  #if HAS_MULTI_VOLUME
-    const int8_t vdiff = (old_real ^ stat), vadd = vdiff & stat;
-  #endif
-  const bool did_insert = TERN(HAS_MULTI_VOLUME, vadd, stat) != INSERT_NONE;
+  if (stat) {                       // Media Inserted
+    safe_delay(500);                // Some boards need a delay to get settled
 
-  if (did_insert) {                 // Media Inserted
-
-    TERN_(HAS_MULTI_VOLUME, ui.refresh());  // Refresh for insert events without messages
-
-    // Some media is already mounted? Nothing to do.
-    if (TERN0(HAS_MULTI_VOLUME, isMounted())) return;
-
-    // Prevent re-entry during the following phases
-    TERN_(HAS_MULTI_VOLUME, no_reenter = true);
-
-    // Try to mount the media (but not at boot if SD_IGNORE_AT_STARTUP)
-    if (TERN1(SD_IGNORE_AT_STARTUP, old_stat > MEDIA_BOOT)) {
-      // If both SD/FD mount simultaneously prefer the default
-      #if HAS_MULTI_VOLUME
-        #if HAS_USB_FLASH_DRIVE && !DEFAULT_VOLUME_IS(SD_ONBOARD)
-          if (vadd & INSERT_USB) selectMediaFlashDrive();
-          else if (vadd & INSERT_SD) selectMediaSDCard();
-        #else
-          if (vadd & INSERT_SD) selectMediaSDCard();
-          else if (vadd & INSERT_USB) selectMediaFlashDrive();
-        #endif
-      #endif
-      safe_delay(500);                  // Time for inserted media to settle. May re-enter for multiple media?
-      mount();
-    }
-
-    // If the selected media isn't mounted throw an alert in ui.media_changed
-    if (!isMounted()) stat = old_real;
+    // Try to mount the media (only later with SD_IGNORE_AT_STARTUP)
+    if (TERN1(SD_IGNORE_AT_STARTUP, old_stat != 2)) mount();
+    if (!isMounted()) stat = 0;     // Not mounted?
 
     TERN_(RESET_STEPPERS_ON_MEDIA_INSERT, reset_stepper_drivers()); // Workaround for Cheetah bug
-
-    // Re-enable media detection logic
-    TERN_(HAS_MULTI_VOLUME, no_reenter = false);
-  }
-  else if (
-    // Media was removed from the device slot
-    #if HAS_MULTI_VOLUME
-         (isSDCardSelected()     && (vdiff & INSERT_SD))
-      || (isFlashDriveSelected() && (vdiff & INSERT_USB))
-    #else
-      stat // == INSERT_MEDIA
-    #endif
-  ) {
-    flag.workDirIsRoot = true;          // Return to root on release
-    release();
-    //TERN_(HAS_MULTI_VOLUME, prev_stat = INSERT_NONE); // HACK to try mounting any remaining media
   }
   else {
-    #if HAS_MULTI_VOLUME
-      stat = old_real;  // Ignore un-mounted media being ejected
-      ui.refresh();     // Refresh for menus that show inserted unmounted media
-    #endif
+    TERN_(HAS_SD_DETECT, release()); // Card is released
   }
 
-  ui.media_changed(old_stat, stat);     // Update the UI or flag an error
+  ui.media_changed(old_stat, stat); // Update the UI or flag an error
 
-  if (stat == INSERT_NONE) return;      // Exit if no media is present
+  if (!stat) return;                // Exit if no media is present
+
+  bool do_auto = true; UNUSED(do_auto);
 
   // First mount on boot? Load emulated EEPROM and look for PLR file.
-  if (old_stat <= MEDIA_BOOT) {
+  if (old_stat == 2) {
     DEBUG_ECHOLNPGM("First mount.");
 
     // Load settings the first time media is inserted (not just during init)
     TERN_(SDCARD_EEPROM_EMULATION, settings.first_load());
 
-    // Check for PLR file. If found skip other procedures!
-    if (TERN0(POWER_LOSS_RECOVERY, recovery.check())) return;
+    // Check for PLR file. Skip One-Click and auto#.g if found
+    TERN_(POWER_LOSS_RECOVERY, if (recovery.check()) do_auto = false);
   }
 
-  // Find the newest file and prompt to print it. Skip other procedures!
-  if (TERN0(ONE_CLICK_PRINT, one_click_check())) return;
+  // Find the newest file and prompt to print it.
+  TERN_(ONE_CLICK_PRINT, if (do_auto && one_click_check()) do_auto = false);
 
-  // On first mount at boot run auto#.g for machine init.
-  if (old_stat <= MEDIA_BOOT) {
+  // Also for the first mount run auto#.g for machine init.
+  // (Skip if PLR or One-Click Print was invoked.)
+  if (old_stat == 2) {
     // Look for auto0.g on the next idle()
-    IF_DISABLED(NO_SD_AUTOSTART, autofile_begin());
+    IF_DISABLED(NO_SD_AUTOSTART, if (do_auto) autofile_begin());
   }
 }
 
@@ -672,8 +577,6 @@ void CardReader::manage_media() {
  * Used by M22, "Release Media", manage_media.
  */
 void CardReader::release() {
-  if (!flag.mounted) return;
-
   // Card removed while printing? Abort!
   if (isStillPrinting())
     abortFilePrintSoon();
@@ -721,7 +624,7 @@ void CardReader::endFilePrintNow(TERN_(SD_RESORT, const bool re_sort/*=false*/))
   TERN_(ADVANCED_PAUSE_FEATURE, did_pause_print = 0);
   TERN_(DWIN_CREALITY_LCD, hmiFlag.print_finish = flag.sdprinting);
   flag.abort_sd_printing = false;
-  if (isFileOpen()) myfile.close();
+  if (isFileOpen()) file.close();
   TERN_(SD_RESORT, if (re_sort) presort());
 }
 
@@ -756,7 +659,7 @@ void CardReader::getAbsFilenameInCWD(char *dst) {
     appendAtom(workDirParents[i]);
 
   if (cnt < MAXPATHNAMELENGTH - (FILENAME_LENGTH) - 1) {    // Leave room for filename and nul
-    appendAtom(myfile);
+    appendAtom(file);
     --dst;
   }
   *dst = '\0';
@@ -833,8 +736,8 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
   const char * const fname = diveToFile(true, diveDir, path);
   if (!fname) return openFailed(path);
 
-  if (myfile.open(diveDir, fname, O_READ)) {
-    filesize = myfile.fileSize();
+  if (file.open(diveDir, fname, O_READ)) {
+    filesize = file.fileSize();
     sdpos = 0;
 
     { // Don't remove this block, as the PORT_REDIRECT is a RAII
@@ -873,7 +776,7 @@ void CardReader::openFileWrite(const char * const path) {
   if (!fname) return openFailed(path);
 
   #if DISABLED(SDCARD_READONLY)
-    if (myfile.open(diveDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
+    if (file.open(diveDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
       flag.saving = true;
       selectFileByName(fname);
       TERN_(EMERGENCY_PARSER, emergency_parser.disable());
@@ -927,7 +830,7 @@ void CardReader::removeFile(const char * const name) {
   #if ENABLED(SDCARD_READONLY)
     SERIAL_ECHOLNPGM("Deletion failed (read-only), File: ", fname, ".");
   #else
-    if (myfile.remove(itsDirPtr, fname)) {
+    if (file.remove(itsDirPtr, fname)) {
       SERIAL_ECHOLNPGM("File deleted:", fname);
       sdpos = 0;
       TERN_(SDCARD_SORT_ALPHA, presort());
@@ -961,7 +864,7 @@ void CardReader::write_command(char * const buf) {
        *npos = nullptr,
        *end = buf + strlen(buf) - 1;
 
-  myfile.writeError = false;
+  file.writeError = false;
   if ((npos = strchr(buf, 'N'))) {
     begin = strchr(npos, ' ') + 1;
     end = strchr(npos, '*') - 1;
@@ -969,9 +872,9 @@ void CardReader::write_command(char * const buf) {
   end[1] = '\r';
   end[2] = '\n';
   end[3] = '\0';
-  myfile.write(begin);
+  file.write(begin);
 
-  if (myfile.writeError) SERIAL_ERROR_MSG(STR_SD_ERR_WRITE_TO_FILE);
+  if (file.writeError) SERIAL_ERROR_MSG(STR_SD_ERR_WRITE_TO_FILE);
 }
 
 #if DISABLED(NO_SD_AUTOSTART)
@@ -1096,8 +999,8 @@ void CardReader::write_command(char * const buf) {
 // Close the working file.
 //
 void CardReader::closefile(const bool store_location/*=false*/) {
-  myfile.sync();
-  myfile.close();
+  file.sync();
+  file.close();
   flag.saving = flag.logging = false;
   sdpos = 0;
 
@@ -1536,7 +1439,7 @@ int16_t CardReader::get_num_items() {
 // Return from procedure or close out the Print Job.
 //
 void CardReader::fileHasFinished() {
-  myfile.close();
+  file.close();
 
   #if HAS_MEDIA_SUBCALLS
     if (file_subcall_ctr > 0) { // Resume calling file after closing procedure

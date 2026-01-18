@@ -152,8 +152,8 @@
   #include "feature/encoder_i2c.h"
 #endif
 
-#if HAS_TRINAMIC_CONFIG
-  #include "module/stepper/trinamic.h"
+#if (HAS_TRINAMIC_CONFIG || HAS_TMC_SPI) && DISABLED(PSU_DEFAULT_OFF)
+  #include "feature/tmc_util.h"
 #endif
 
 #if HAS_CUTTER
@@ -269,10 +269,6 @@
   #include "feature/rs485.h"
 #endif
 
-#if !HAS_MEDIA
-  CardReader card; // Stub instance with "no media" methods
-#endif
-
 PGMSTR(M112_KILL_STR, "M112 Shutdown");
 
 #if ENABLED(CONFIGURABLE_MACHINE_NAME)
@@ -343,7 +339,7 @@ bool printer_busy() {
 /**
  * A Print Job exists when the timer is running or SD is printing
  */
-bool printJobOngoing() { return print_job_timer.isRunning() || card.isStillPrinting(); }
+bool printJobOngoing() { return print_job_timer.isRunning() || IS_SD_PRINTING(); }
 
 /**
  * Printing is active when a job is underway but not paused
@@ -354,7 +350,7 @@ bool printingIsActive() { return !did_pause_print && printJobOngoing(); }
  * Printing is paused according to SD or host indicators
  */
 bool printingIsPaused() {
-  return did_pause_print || print_job_timer.isPaused() || card.isPaused();
+  return did_pause_print || print_job_timer.isPaused() || IS_SD_PAUSED();
 }
 
 void startOrResumeJob() {
@@ -513,7 +509,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
     // Handle a standalone HOME button
     constexpr millis_t HOME_DEBOUNCE_DELAY = 1000UL;
     static millis_t next_home_key_ms; // = 0
-    if (!card.isStillPrinting() && !READ(HOME_PIN)) { // HOME_PIN goes LOW when pressed
+    if (!IS_SD_PRINTING() && !READ(HOME_PIN)) { // HOME_PIN goes LOW when pressed
       if (ELAPSED(ms, next_home_key_ms)) {
         next_home_key_ms = ms + HOME_DEBOUNCE_DELAY;
         LCD_MESSAGE(MSG_AUTO_HOME);
@@ -808,7 +804,7 @@ void idle(const bool no_stepper_sleep/*=false*/) {
 
   // Handle Power-Loss Recovery
   #if ENABLED(POWER_LOSS_RECOVERY) && PIN_EXISTS(POWER_LOSS)
-    if (card.isStillPrinting()) recovery.outage();
+    if (IS_SD_PRINTING()) recovery.outage();
   #endif
 
   // Run StallGuard endstop checks
@@ -819,6 +815,9 @@ void idle(const bool no_stepper_sleep/*=false*/) {
 
   // Handle SD Card insert / remove
   TERN_(HAS_MEDIA, card.manage_media());
+
+  // Handle USB Flash Drive insert / remove
+  TERN_(HAS_USB_FLASH_DRIVE, card.diskIODriver()->idle());
 
   // Announce Host Keepalive state (if any)
   TERN_(HOST_KEEPALIVE_FEATURE, gcode.host_keepalive());
@@ -1349,11 +1348,8 @@ void setup() {
     #endif
   #endif
 
-  #if HAS_MEDIA
-    SETUP_RUN(card.init());           // Prepare for media usage
-    #if ANY(SDCARD_EEPROM_EMULATION, POWER_LOSS_RECOVERY)
-      SETUP_RUN(card.mount());        // Mount media with settings before first_load
-    #endif
+  #if HAS_MEDIA && ANY(SDCARD_EEPROM_EMULATION, POWER_LOSS_RECOVERY)
+    SETUP_RUN(card.mount());          // Mount media with settings before first_load
   #endif
 
   // Prepare some LCDs to display early

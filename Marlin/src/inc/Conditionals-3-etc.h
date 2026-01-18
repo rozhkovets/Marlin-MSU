@@ -42,37 +42,31 @@
 
 // Clean up unused temperature sensors and sub-options
 
-#define UNUSED_TEMP_SENSOR(N) (!TEMP_SENSOR_##N || N >= HOTENDS)
-#if UNUSED_TEMP_SENSOR(0)
+#if !TEMP_SENSOR_0
   #undef TEMP_SENSOR_0
 #endif
-#if UNUSED_TEMP_SENSOR(1)
+#if !TEMP_SENSOR_1
   #undef TEMP_SENSOR_1
 #endif
-#if UNUSED_TEMP_SENSOR(2)
+#if !TEMP_SENSOR_2
   #undef TEMP_SENSOR_2
 #endif
-#if UNUSED_TEMP_SENSOR(3)
+#if !TEMP_SENSOR_3
   #undef TEMP_SENSOR_3
 #endif
-#if UNUSED_TEMP_SENSOR(4)
+#if !TEMP_SENSOR_4
   #undef TEMP_SENSOR_4
 #endif
-#if UNUSED_TEMP_SENSOR(5)
+#if !TEMP_SENSOR_5
   #undef TEMP_SENSOR_5
 #endif
-#if UNUSED_TEMP_SENSOR(6)
+#if !TEMP_SENSOR_6
   #undef TEMP_SENSOR_6
 #endif
-#if UNUSED_TEMP_SENSOR(7)
+#if !TEMP_SENSOR_7
   #undef TEMP_SENSOR_7
 #endif
-#undef UNUSED_TEMP_SENSOR
 
-#if !HAS_HOTEND
-  #undef PREHEAT_1_TEMP_HOTEND
-  #undef PREHEAT_2_TEMP_HOTEND
-#endif
 #if !TEMP_SENSOR_BED
   #undef TEMP_SENSOR_BED
   #undef THERMAL_PROTECTION_BED
@@ -560,6 +554,11 @@
   #undef Z_CLEARANCE_DEPLOY_PROBE
 #endif
 
+#if !(ANY(HAS_BED_PROBE, BACKLASH_GCODE) || (ENABLED(EXTENSIBLE_UI) && ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)))
+  #undef Z_PROBE_FEEDRATE_FAST
+  #undef Z_PROBE_FEEDRATE_SLOW
+#endif
+
 /**
  * Z_CLEARANCE_FOR_HOMING
  */
@@ -676,4 +675,8 @@
 
 #if ANY(PID_DEBUG, PID_BED_DEBUG, PID_CHAMBER_DEBUG)
   #define HAS_PID_DEBUG 1
+#endif
+
+#if ALL(SPI_FLASH, HAS_MEDIA, MARLIN_DEV_MODE)
+  #define SPI_FLASH_BACKUP 1
 #endif

@@ -105,10 +105,6 @@
   #endif
 #endif
 
-#if !(ANY(HAS_BED_PROBE, BACKLASH_GCODE) || (ENABLED(EXTENSIBLE_UI) && ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)))
-  #undef Z_PROBE_FEEDRATE_FAST
-  #undef Z_PROBE_FEEDRATE_SLOW
-#endif
 #if !HAS_BED_PROBE
   #undef BABYSTEP_ZPROBE_OFFSET
   #undef PROBING_USE_CURRENT_HOME
@@ -235,7 +231,6 @@
   #undef FWRETRACT
   #undef LCD_SHOW_E_TOTAL
   #undef LIN_ADVANCE
-  #undef SMOOTH_LIN_ADVANCE
   #undef MANUAL_E_MOVES_RELATIVE
   #undef PID_EXTRUSION_SCALING
   #undef SHOW_TEMP_ADC_VALUES
@@ -342,10 +337,6 @@
 // Linear advance uses Jerk since E is an isolated axis
 #if ALL(HAS_JUNCTION_DEVIATION, LIN_ADVANCE)
   #define HAS_LINEAR_E_JERK 1
-#endif
-
-#if ENABLED(LIN_ADVANCE) && DISABLED(SMOOTH_LIN_ADVANCE)
-  #define HAS_ROUGH_LIN_ADVANCE 1
 #endif
 
 // Some displays can toggle Adaptive Step Smoothing.
@@ -1250,22 +1241,8 @@
   #define HOMING_BUMP_MM { 0, 0, 0 }
 #endif
 
-#if ENABLED(MULTI_VOLUME)
-  #define HAS_MULTI_VOLUME 1
-  #define SD_ONBOARD      101
-  #define USB_FLASH_DRIVE 102
-  #define DEFAULT_VOLUME_IS(N) (DEFAULT_VOLUME == N)
-  #define SHARED_VOLUME_IS(N) (DEFAULT_SHARED_VOLUME == N)
-#else
-  #define DEFAULT_VOLUME_IS(...) 0
-  #define SHARED_VOLUME_IS(...) 0
-#endif
-
-#if ANY(USB_FLASH_DRIVE_SUPPORT, VOLUME_USB_FLASH_DRIVE)
-  #define HAS_USB_FLASH_DRIVE 1
-  #if NONE(USE_OTG_USB_HOST, USE_UHS2_USB, USE_UHS3_USB)
-    #define USE_UHS2_USB
-  #endif
+#if HAS_USB_FLASH_DRIVE && NONE(USE_OTG_USB_HOST, USE_UHS3_USB)
+  #define USE_UHS2_USB
 #endif
 
 /**
@@ -1590,9 +1567,4 @@
   #endif
   #undef AUTO_REPORT_SD_STATUS
   #define AUTO_REPORT_SD_STATUS
-#endif
-
-// SPI Flash Backup
-#if ALL(SPI_FLASH, HAS_MEDIA, MARLIN_DEV_MODE)
-  #define SPI_FLASH_BACKUP 1
 #endif

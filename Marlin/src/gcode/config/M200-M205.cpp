@@ -124,13 +124,8 @@
  *  S<percent> : Speed factor percentage.
  */
 void GcodeSuite::M201() {
-  if (!parser.seen("T" STR_AXES_LOGICAL
-    #ifdef XY_FREQUENCY_LIMIT
-      "FS"
-    #endif
-  )) {
+  if (!parser.seen("T" STR_AXES_LOGICAL TERN_(XY_FREQUENCY_LIMIT, "FS")))
     return M201_report();
-  }
 
   const int8_t target_extruder = get_target_extruder_from_command();
   if (target_extruder < 0) return;
@@ -152,11 +147,7 @@ void GcodeSuite::M201_report(const bool forReplay/*=true*/) {
   TERN_(MARLIN_SMALL_BUILD, return);
 
   report_heading_etc(forReplay, F(STR_MAX_ACCELERATION));
-
-  bool eol = false;
-
   #if NUM_AXES
-    eol = true;
     SERIAL_ECHOPGM_P(
       LIST_N(DOUBLE(NUM_AXES),
         PSTR("  M201 X"), LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[X_AXIS]),
@@ -173,17 +164,12 @@ void GcodeSuite::M201_report(const bool forReplay/*=true*/) {
   #endif
 
   #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
-    eol = true;
     SERIAL_ECHOPGM_P(SP_E_STR, VOLUMETRIC_UNIT(planner.settings.max_acceleration_mm_per_s2[E_AXIS]));
   #endif
 
-  #ifdef XY_FREQUENCY_LIMIT
-    eol = true;
-    SERIAL_ECHOPGM_P(PSTR(" F"), planner.xy_freq_limit_hz);
-    SERIAL_ECHOPGM_P(PSTR(" S"), (planner.xy_freq_min_speed_factor * 100));
+  #if NUM_AXES || (HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS))
+    SERIAL_EOL();
   #endif
-
-  if (eol) SERIAL_EOL();
 
   #if ENABLED(DISTINCT_E_FACTORS)
     for (uint8_t i = 0; i < E_STEPPERS; ++i) {
@@ -219,11 +205,7 @@ void GcodeSuite::M203_report(const bool forReplay/*=true*/) {
   TERN_(MARLIN_SMALL_BUILD, return);
 
   report_heading_etc(forReplay, F(STR_MAX_FEEDRATES));
-
-  bool eol = false;
-
   #if NUM_AXES
-    eol = true;
     SERIAL_ECHOPGM_P(
       LIST_N(DOUBLE(NUM_AXES),
         PSTR("  M203 X"), LINEAR_UNIT(planner.settings.max_feedrate_mm_s[X_AXIS]),
@@ -240,11 +222,12 @@ void GcodeSuite::M203_report(const bool forReplay/*=true*/) {
   #endif
 
   #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
-    eol = true;
     SERIAL_ECHOPGM_P(SP_E_STR, VOLUMETRIC_UNIT(planner.settings.max_feedrate_mm_s[E_AXIS]));
   #endif
 
-  if (eol) SERIAL_EOL();
+  #if NUM_AXES || (HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS))
+    SERIAL_EOL();
+  #endif
 
   #if ENABLED(DISTINCT_E_FACTORS)
     for (uint8_t i = 0; i < E_STEPPERS; ++i) {

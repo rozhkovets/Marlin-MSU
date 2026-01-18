@@ -46,15 +46,9 @@
 //
 // Limit Switches
 //
-#if ENABLED(M300_ROTATE_TOWERS)
-  #define X_STOP_PIN                        PC14
-  #define Y_STOP_PIN                        PC15
-  #define Z_STOP_PIN                        PC13
-#else
-  #define X_STOP_PIN                        PC13
-  #define Y_STOP_PIN                        PC14
-  #define Z_STOP_PIN                        PC15
-#endif
+#define X_STOP_PIN                          PC13
+#define Y_STOP_PIN                          PC14
+#define Z_STOP_PIN                          PC15
 
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                   PB7
@@ -63,31 +57,17 @@
 //
 // Steppers
 //
-#if ENABLED(M300_ROTATE_TOWERS)
-  #define X_STEP_PIN                        PB12
-  #define X_DIR_PIN                         PB11
-  #define X_ENABLE_PIN                      PB10
+#define X_STEP_PIN                          PB14
+#define X_DIR_PIN                           PB13
+#define X_ENABLE_PIN                        PB10
 
-  #define Y_STEP_PIN                        PB2
-  #define Y_DIR_PIN                         PB1
-  #define Y_ENABLE_PIN                      PB10
+#define Y_STEP_PIN                          PB12
+#define Y_DIR_PIN                           PB11
+#define Y_ENABLE_PIN                        PB10
 
-  #define Z_STEP_PIN                        PB14
-  #define Z_DIR_PIN                         PB13
-  #define Z_ENABLE_PIN                      PB10
-#else
-  #define X_STEP_PIN                        PB14
-  #define X_DIR_PIN                         PB13
-  #define X_ENABLE_PIN                      PB10
-
-  #define Y_STEP_PIN                        PB12
-  #define Y_DIR_PIN                         PB11
-  #define Y_ENABLE_PIN                      PB10
-
-  #define Z_STEP_PIN                        PB2
-  #define Z_DIR_PIN                         PB1
-  #define Z_ENABLE_PIN                      PB10
-#endif
+#define Z_STEP_PIN                          PB2
+#define Z_DIR_PIN                           PB1
+#define Z_ENABLE_PIN                        PB10
 
 #define E0_STEP_PIN                         PA7
 #define E0_DIR_PIN                          PA6

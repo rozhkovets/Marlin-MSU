@@ -173,11 +173,6 @@ class Endstops {
     static void init();
 
     /**
-     * Saved settings initialization
-     */
-    static void factory_reset();
-
-    /**
      * Are endstops or the Z min probe or the CALIBRATION probe set to abort the move?
      */
     FORCE_INLINE static bool abort_enabled() {

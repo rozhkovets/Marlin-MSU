@@ -604,30 +604,14 @@
   #define NUM_SERVO_PLUGS 0
 #endif
 
-/**
- * Endstop Pins
- *
- * The general idea is to provide STOP and MIN|MAX pins as needed...
- *
- *  - Standard Homing   : X_STOP_PIN with alias X_(MIN|MAX)_PIN. Same for Y, Z, etc.
- *  - DUAL_X_CARRIAGE   : Asserts both X_MIN_PIN and X_MAX_PIN must be defined.
- *  - X_DUAL_ENDSTOPS   : Also define X2_STOP_PIN with alias X2_(MIN|MAX)_PIN.
- *  - Y_DUAL_ENDSTOPS   : Also define Y2_STOP_PIN with alias Y2_(MIN|MAX)_PIN.
- *  - Z_MULTI_ENDSTOPS  : Also define Z2_STOP_PIN with alias Z2_(MIN|MAX)_PIN. Same for Z3, Z4.
- *
- *  Pins files should define pins according to usability:
- *    - Define X_STOP_PIN for boards with a preferred endstop plug, including Sensorless.
- *    - Define X_OTHR_PIN for the "other" endstop pin on the axis.
- *    - Define X_MIN_PIN and/or X_MAX_PIN as preferred connectors.
- *    - Allow user override of these pins for easier swapping.
- *
- * See also Conditionals-5-post.h >> "Endstop and probe flags"
- */
+// Only used within pins files
+#undef NEEDS_X_MINMAX
+#undef NEEDS_Y_MINMAX
+#undef NEEDS_Z_MINMAX
 
 //
 // Assign endstop pins, with handling for boards that have only 3 connectors
 //
-
 #if HAS_X_AXIS
   #ifdef X_STOP_PIN
     #if X_HOME_TO_MIN
@@ -640,19 +624,8 @@
   #elif X_HOME_TO_MAX
     #define X_STOP_PIN X_MAX_PIN
   #endif
-  #if ENABLED(X_DUAL_ENDSTOPS) && PIN_EXISTS(X_STOP)
-    #ifndef X_MIN_PIN
-      #define X_MIN_PIN X_STOP_PIN
-    #endif
-    #ifndef X2_STOP_PIN
-      #define X2_STOP_PIN X_STOP_PIN
-    #endif
-  #endif
-  #if !defined(X_MIN_PIN) && X_HOME_TO_MAX && defined(X_OTHR_PIN)
-    #define X_MIN_PIN X_OTHR_PIN
-  #endif
-  #if !defined(X_MAX_PIN) && X_HOME_TO_MIN && defined(X_OTHR_PIN)
-    #define X_MAX_PIN X_OTHR_PIN
+  #if !defined(X2_STOP_PIN) && ENABLED(X_DUAL_ENDSTOPS) && PIN_EXISTS(X_STOP)
+    #define X2_STOP_PIN X_STOP_PIN
   #endif
 #endif
 
@@ -665,22 +638,11 @@
     #endif
   #elif Y_HOME_TO_MIN
     #define Y_STOP_PIN Y_MIN_PIN
-  #elif Y_HOME_TO_MAX
+  #elif X_HOME_TO_MAX
     #define Y_STOP_PIN Y_MAX_PIN
   #endif
-  #if ENABLED(Y_DUAL_ENDSTOPS) && PIN_EXISTS(Y_STOP)
-    #ifndef Y_MIN_PIN
-      #define Y_MIN_PIN Y_STOP_PIN
-    #endif
-    #ifndef Y2_STOP_PIN
-      #define Y2_STOP_PIN Y_STOP_PIN
-    #endif
-  #endif
-  #if !defined(Y_MIN_PIN) && Y_HOME_TO_MAX && defined(Y_OTHR_PIN)
-    #define Y_MIN_PIN Y_OTHR_PIN
-  #endif
-  #if !defined(Y_MAX_PIN) && Y_HOME_TO_MIN && defined(Y_OTHR_PIN)
-    #define Y_MAX_PIN Y_OTHR_PIN
+  #if !defined(Y2_STOP_PIN) && ENABLED(Y_DUAL_ENDSTOPS) && PIN_EXISTS(Y_STOP)
+    #define Y2_STOP_PIN Y_STOP_PIN
   #endif
 #endif
 
@@ -691,12 +653,6 @@
     #elif Z_HOME_TO_MAX
       #define Z_MAX_PIN Z_STOP_PIN
     #endif
-  #endif
-  #if !defined(Z_MIN_PIN) && Z_HOME_TO_MAX && defined(Z_OTHR_PIN)
-    #define Z_MIN_PIN Z_OTHR_PIN
-  #endif
-  #if !defined(Z_MAX_PIN) && Z_HOME_TO_MIN && defined(Z_OTHR_PIN)
-    #define Z_MAX_PIN Z_OTHR_PIN
   #endif
   #if ENABLED(Z_MULTI_ENDSTOPS)
     #if ((Z_HOME_TO_MIN && !defined(Z2_MIN_PIN)) || (Z_HOME_TO_MAX && !defined(Z2_MAX_PIN))) && !defined(Z2_STOP_PIN)
@@ -935,7 +891,7 @@
     #endif
     #define AUTO_ASSIGNED_X2_DIAG 1
   #endif
-#endif // HAS_X2_STEPPER
+#endif
 
 #ifndef X2_CS_PIN
   #define X2_CS_PIN  -1
@@ -1020,7 +976,7 @@
     #endif
     #define AUTO_ASSIGNED_Y2_DIAG 1
   #endif
-#endif // HAS_Y2_STEPPER
+#endif
 
 #ifndef Y2_CS_PIN
   #define Y2_CS_PIN  -1
@@ -1105,7 +1061,7 @@
     #endif
     #define AUTO_ASSIGNED_Z2_DIAG 1
   #endif
-#endif // NUM_Z_STEPPERS >= 2
+#endif
 
 #ifndef Z2_CS_PIN
   #define Z2_CS_PIN  -1
@@ -1190,7 +1146,7 @@
     #endif
     #define AUTO_ASSIGNED_Z3_DIAG 1
   #endif
-#endif // NUM_Z_STEPPERS >= 3
+#endif
 
 #ifndef Z3_CS_PIN
   #define Z3_CS_PIN  -1
@@ -1275,7 +1231,7 @@
     #endif
     #define AUTO_ASSIGNED_Z4_DIAG 1
   #endif
-#endif // NUM_Z_STEPPERS >= 4
+#endif
 
 #ifndef Z4_CS_PIN
   #define Z4_CS_PIN  -1
@@ -1360,7 +1316,7 @@
     #endif
     #define AUTO_ASSIGNED_I_DIAG 1
   #endif
-#endif // HAS_I_AXIS
+#endif
 
 #ifndef I_CS_PIN
   #define I_CS_PIN  -1
@@ -1445,7 +1401,7 @@
     #endif
     #define AUTO_ASSIGNED_J_DIAG 1
   #endif
-#endif // HAS_J_AXIS
+#endif
 
 #ifndef J_CS_PIN
   #define J_CS_PIN  -1
@@ -1530,7 +1486,7 @@
     #endif
     #define AUTO_ASSIGNED_K_DIAG 1
   #endif
-#endif // HAS_K_AXIS
+#endif
 
 #ifndef K_CS_PIN
   #define K_CS_PIN  -1
@@ -1615,7 +1571,7 @@
     #endif
     #define AUTO_ASSIGNED_U_DIAG 1
   #endif
-#endif // HAS_U_AXIS
+#endif
 
 #ifndef U_CS_PIN
   #define U_CS_PIN  -1
@@ -1700,7 +1656,7 @@
     #endif
     #define AUTO_ASSIGNED_V_DIAG 1
   #endif
-#endif // HAS_V_AXIS
+#endif
 
 #ifndef V_CS_PIN
   #define V_CS_PIN  -1
@@ -1778,7 +1734,7 @@
     #endif
     #define AUTO_ASSIGNED_W_DIAG 1
   #endif
-#endif // HAS_W_AXIS
+#endif
 
 #ifndef W_CS_PIN
   #define W_CS_PIN  -1

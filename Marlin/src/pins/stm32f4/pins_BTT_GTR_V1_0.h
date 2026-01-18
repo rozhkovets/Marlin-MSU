@@ -68,24 +68,38 @@
 //
 #ifdef X_STALL_SENSITIVITY
   #define X_STOP_PIN                  X_DIAG_PIN
-  #define X_OTHR_PIN                        PG14  // X+
+  #if X_HOME_TO_MIN
+    #define X_MAX_PIN                E0_DIAG_PIN  // X+
+  #else
+    #define X_MIN_PIN                E0_DIAG_PIN  // X+
+  #endif
 #else
-  #define X_MIN_PIN                         PF2   // X-
-  #define X_MAX_PIN                         PG14  // X+
+  #define X_MIN_PIN                   X_DIAG_PIN  // X-
+  #define X_MAX_PIN                  E0_DIAG_PIN  // X+
 #endif
+
 #ifdef Y_STALL_SENSITIVITY
   #define Y_STOP_PIN                  Y_DIAG_PIN
-  #define Y_OTHR_PIN                        PG9   // Y+
+  #if Y_HOME_TO_MIN
+    #define Y_MAX_PIN                E1_DIAG_PIN  // Y+
+  #else
+    #define Y_MIN_PIN                E1_DIAG_PIN  // Y+
+  #endif
 #else
-  #define Y_MIN_PIN                         PC13  // Y-
-  #define Y_MAX_PIN                         PG9   // Y+
+  #define Y_MIN_PIN                   Y_DIAG_PIN  // Y-
+  #define Y_MAX_PIN                  E1_DIAG_PIN  // Y+
 #endif
+
 #ifdef Z_STALL_SENSITIVITY
   #define Z_STOP_PIN                  Z_DIAG_PIN
-  #define Z_OTHR_PIN                        PD3   // Z+
+  #if Z_HOME_TO_MIN
+    #define Z_MAX_PIN                E2_DIAG_PIN  // Z+
+  #else
+    #define Z_MIN_PIN                E2_DIAG_PIN  // Z+
+  #endif
 #else
-  #define Z_MIN_PIN                         PE0   // Z-
-  #define Z_MAX_PIN                         PD3   // Z+
+  #define Z_MIN_PIN                   Z_DIAG_PIN  // Z-
+  #define Z_MAX_PIN                  E2_DIAG_PIN  // Z+
 #endif
 
 //

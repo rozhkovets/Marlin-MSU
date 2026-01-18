@@ -12,16 +12,13 @@
 
 #include "../../feature/runout.h"
 
-#define MSU_RUNOUT_SENSOR_ON_GCODE  "M412 S1"
-#define MSU_RUNOUT_SENSOR_OFF_GCODE "M412 S0"
+#include "../../lcd/lcdprint.h"
+
+
 bool runout_state;
 
 int MSU_IDLER_POSITION[6] = MSU_BEARING_ANGLES; //parking, position 1 - 5
 int selected_filament_nbr = 0;
-
-#if ENABLED(MSU_LCD_MESSAGES) 
-  MString<30> my_message;
-#endif
 
 char char_arr [3];
 
@@ -43,16 +40,23 @@ xyze_pos_t extruder_park_wipe_position = MSU_PARK_EXTRUDER_WIPE_POS;
 void MSUMP::tool_change(uint8_t index)
 {
   //проверка на уже выбранный
-  if (selected_filament_nbr == index) return; // Nothing to do
+  if (selected_filament_nbr == index) {
+      ui.refresh();             // FIX
+      return; // Nothing to do
+  }
   
   //вывод сообщения на экран
   #if ENABLED(MSU_LCD_MESSAGES)
     pre_change_lcd_message(selected_filament_nbr, index);
+    idle();                 // FIX
   #endif
 
   #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
     runout_state = runout.enabled;
-    if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_OFF_GCODE));
+    if (runout_state) {
+      gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_OFF_GCODE));
+      idle();                 // FIX
+    }
   #endif
 
   //парковка перед сменой филамента
@@ -62,9 +66,10 @@ void MSUMP::tool_change(uint8_t index)
       move_extruder(-MSU_PARK_RETRACT_BEFORE_PARK_MM, MSU_PARK_RETRACT_BEFORE_PARK_FR, MSU_ORIGINAL_EXTRUDER_NBR)
     #endif
     park_extruder();
+    idle();                 // FIX
   #endif
 
-  #if ENABLED(MSU_BOWDEN_TUBE_SETUP)
+  #if ENABLED(MSU_BOWDEN_TUBE_SETUP)//need fix
     //Выгрузка MSU
     idler_select_filament_nbr(selected_filament_nbr);
 
@@ -103,26 +108,31 @@ void MSUMP::tool_change(uint8_t index)
 
     //Выгрузка MSU
     idler_select_filament_nbr(selected_filament_nbr);
+    idle();                 // FIX
     move_extruder(-0.1, MSU_SPEED, MSU_EXTRUDER_NBR); //костыль резкого первого движения
     move_extruder(-MSU_BOWDEN_TUBE_LENGTH, MSU_SPEED, MSU_EXTRUDER_NBR);
 
     //Загрузка MSU
     idler_select_filament_nbr(index);
+    idle();                 // FIX
     selected_filament_nbr = index;
     move_extruder(1 + MSU_BOWDEN_TUBE_LENGTH, MSU_SPEED, MSU_EXTRUDER_NBR);	
     move_both_extruders(MSU_DIRECT_DRIVE_BOTH_LOAD_MM, MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED);
     idler_select_filament_nbr(-1);
-
+    idle();                 // FIX
     //если загрузка неудачна, должно вызвать срабатывание датчика и M600 сразу после окончания смены филамента
     #if ENABLED(MSU_ON_OFF_RUNOUT_SENSOR)
-      if (runout_state) gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
+      if (runout_state) {
+        gcode.process_subcommands_now(F(MSU_RUNOUT_SENSOR_ON_GCODE));
+        idle();                 // FIX
+      }
     #endif
     
     //purge
     move_extruder(MSU_PURGE_LENGTH, MSU_ORIGINAL_EXTRUDER_SPEED, MSU_ORIGINAL_EXTRUDER_NBR);
   #endif
 
-  #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
+  #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP) //need fix
     //выгрузка
     move_extruder(-MSU_GEAR_LENGTH, MSU_SPEED, MSU_EXTRUDER_NBR);  
     
@@ -157,17 +167,20 @@ void MSUMP::tool_change(uint8_t index)
   //nozzle wipe
   #if ENABLED(MSU_NOZZLE_WIPE)
     nozzle_wipe();
+    idle();                 // FIX
   #endif
 
   #if ENABLED(MSU_LCD_MESSAGES) 
     post_change_lcd_message(selected_filament_nbr);
+    idle();                 // FIX
   #endif
 
   //возврат после смены филамента
   #if ENABLED(MSU_PARK_EXTRUDER_WHILE_MSU_TOOL_CHANGE)
     do_blocking_move_to_xy(extruder_origin_position, park_fr_xy); //вернуть экструдер на исходную позицию
+    idle();                 // FIX
   #endif
-
+  ui.refresh();             // FIX
 }
 
 void MSUMP::move_both_extruders(float dist, const_feedRate_t speed)
@@ -192,7 +205,10 @@ void MSUMP::move_extruder(float dist, const_feedRate_t speed, int extruder_nbr)
   planner.buffer_line(current_position, speed, extruder_nbr);
   current_position.e = old;
   planner.set_e_position_mm(old);
-  planner.synchronize();
+  //planner.synchronize();
+
+  planner.synchronize();    // FIX: оставить, но…
+  idle();                   // FIX: ОБЯЗАТЕЛЬНО
 }
 
 // move idler to specific filament selection, -1 to park the idler
@@ -209,13 +225,24 @@ void MSUMP::idler_select_filament_nbr(int index)
 //резка филамента
 void MSUMP::cut_filament(int cut_try) 
 {
-  for (int i = 0; i < cut_try; i++)
+  for (int i = 0; i < cut_try; i++) { // FIX
+    servo[MSU_SERVO_CUTTER_NBR].move(MSU_SERVO_CUTTER_CUT_ANGL);
+
+    millis_t t1 = millis();
+    while (ELAPSED(millis(), t1 + 100)) idle();  // FIX
+
+    servo[MSU_SERVO_CUTTER_NBR].move(MSU_SERVO_CUTTER_PARK_ANGL);
+
+    millis_t t2 = millis();
+    while (ELAPSED(millis(), t2 + 100)) idle();  // FIX
+  }
+  /*for (int i = 0; i < cut_try; i++)
   {
     servo[MSU_SERVO_CUTTER_NBR].move(MSU_SERVO_CUTTER_CUT_ANGL);
     safe_delay(100);
     servo[MSU_SERVO_CUTTER_NBR].move(MSU_SERVO_CUTTER_PARK_ANGL);
     safe_delay(100);
-  }       
+  }       */
 }
 
 //парковка экструдера
@@ -233,7 +260,7 @@ void MSUMP::park_extruder()
     case 4: do_blocking_move_to_y(extruder_park_position.y, park_fr_xy);
             do_blocking_move_to_x(extruder_park_position.x, park_fr_xy); break;
   }
-  
+  idle();                 // FIX
   #if ENABLED(MSU_NOZZLE_WIPE)
     #ifndef MSU_PARK_EXTRUDER_FOR_WIPE_MOVE
       #define MSU_PARK_EXTRUDER_FOR_WIPE_MOVE 0
@@ -247,6 +274,7 @@ void MSUMP::park_extruder()
       case 4: do_blocking_move_to_y(extruder_park_wipe_position.y, park_fr_xy);
               do_blocking_move_to_x(extruder_park_wipe_position.x, park_fr_xy); break;
     }
+  idle();                 // FIX
   #endif
 }
 
@@ -265,27 +293,24 @@ char * MSUMP::text_selected_filament_nbr() //for lcd menu - current tool
 
 void MSUMP::pre_change_lcd_message(int a, int b)
 {
-  my_message.set(F("M117 Change T"));
-  my_message.append(a);
-  my_message.append("(F");
-  my_message.append(a+1);
-  my_message.append(")");
-  my_message.append("->");
-  my_message.append("T");
-  my_message.append(b);
-  my_message.append("(F");
-  my_message.append(b+1);
-  my_message.append(")");
-  gcode.process_subcommands_now(my_message);
+  char msg[32]; // 32 символа — стандарт для LCD
+
+  snprintf(msg, sizeof(msg),
+           "Change T%d(F%d)->T%d(F%d)",
+            a % 10, (a+1) % 10,
+            b % 10, (b+1) % 10 );
+  ui.set_status(msg);
+  ui.refresh();             // FIX
 }
 
 void MSUMP::post_change_lcd_message(int a)
 {
-  my_message.set(F("M117 Selected T"));
-  my_message.append(a);
-  my_message.append("(F");
-  my_message.append(a+1);
-  my_message.append(")");
-  gcode.process_subcommands_now(my_message);
+  char msg[32]; // 32 символа — стандарт для LCD
+
+  snprintf(msg, sizeof(msg),
+           "Change T%d(F%d)",
+            a % 10, (a+1)% 10 );
+  ui.set_status(msg); 
+  ui.refresh();             // FIX
 }
 #endif											  

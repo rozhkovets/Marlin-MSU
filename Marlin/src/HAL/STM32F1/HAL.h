@@ -40,7 +40,7 @@
 #include "../../inc/MarlinConfigPre.h"
 
 #if HAS_SD_HOST_DRIVE
-  #include "sd/msc_sd.h"
+  #include "msc_sd.h"
 #endif
 
 // ------------------------

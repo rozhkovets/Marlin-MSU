@@ -740,7 +740,7 @@ void ChironTFT::panelAction(uint8_t req) {
       break;
 
     case 26:   // A26 Refresh SD
-      card.release();
+      if (card.isMounted())card.release();
       card.mount();
       safe_delay(500);
       filenavigator.reset();

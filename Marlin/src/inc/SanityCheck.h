@@ -416,20 +416,10 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
 /**
  * SD Card Settings
  */
-#if HAS_MEDIA
-  #if HAS_MULTI_VOLUME
-    #if !(DEFAULT_VOLUME_IS(SD_ONBOARD) || DEFAULT_VOLUME_IS(USB_FLASH_DRIVE))
-      #error "DEFAULT_VOLUME must be either SD_ONBOARD or USB_FLASH_DRIVE."
-    #endif
-    #if !(SHARED_VOLUME_IS(SD_ONBOARD) || SHARED_VOLUME_IS(USB_FLASH_DRIVE))
-      #error "DEFAULT_SHARED_VOLUME must be either SD_ONBOARD or USB_FLASH_DRIVE."
-    #endif
-  #endif
-  #if ALL(ELB_FULL_GRAPHIC_CONTROLLER, HAS_MARLINUI_MENU, SD_CONNECTION_TYPICAL, HAS_SD_DETECT) && SD_DETECT_STATE == LOW
-    #error "SD_DETECT_STATE must be set HIGH for SD on the ELB_FULL_GRAPHIC_CONTROLLER."
-  #endif
-  #undef SD_CONNECTION_TYPICAL
+#if ALL(HAS_MEDIA, HAS_SD_DETECT, SD_CONNECTION_TYPICAL, ELB_FULL_GRAPHIC_CONTROLLER, HAS_MARLINUI_MENU) && SD_DETECT_STATE == LOW
+  #error "SD_DETECT_STATE must be set HIGH for SD on the ELB_FULL_GRAPHIC_CONTROLLER."
 #endif
+#undef SD_CONNECTION_TYPICAL
 
 /**
  * SD File Sorting
@@ -736,8 +726,6 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
     #error "SWITCHING_NOZZLE requires NUM_SERVOS >= 1."
   #elif !defined(SWITCHING_NOZZLE_SERVO_NR)
     #error "SWITCHING_NOZZLE requires SWITCHING_NOZZLE_SERVO_NR."
-  #elif ALL(SWITCHING_NOZZLE_LIFT_TO_PROBE, NOZZLE_AS_PROBE)
-    #error "SWITCHING_NOZZLE_LIFT_TO_PROBE cannot be used with NOZZLE_AS_PROBE."
   #elif SWITCHING_NOZZLE_SERVO_NR == 0 && !PIN_EXISTS(SERVO0)
     #error "SERVO0_PIN must be defined for your SWITCHING_NOZZLE."
   #elif SWITCHING_NOZZLE_SERVO_NR == 1 && !PIN_EXISTS(SERVO1)
@@ -846,7 +834,7 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
  * Linear Advance 1.5 - Check K value range
  */
 #if ENABLED(LIN_ADVANCE)
-  #if ENABLED(DISTINCT_E_FACTORS)
+  #if DISTINCT_E > 1
     constexpr float lak[] = ADVANCE_K;
     static_assert(COUNT(lak) <= DISTINCT_E, "The ADVANCE_K array has too many elements (i.e., more than " STRINGIFY(DISTINCT_E) ").");
     #define _LIN_ASSERT(N) static_assert(N >= COUNT(lak) || WITHIN(lak[N], 0, 10), "ADVANCE_K values must be from 0 to 10 (Changed in LIN_ADVANCE v1.5, Marlin 1.1.9).");
@@ -859,19 +847,7 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
   #if ENABLED(DIRECT_STEPPING)
     #error "DIRECT_STEPPING is incompatible with LIN_ADVANCE. (Extrusion is controlled externally by the Step Daemon.)"
   #endif
-
-  /**
-   * Smooth Linear Advance
-   */
-  #if ENABLED(SMOOTH_LIN_ADVANCE)
-    #ifndef CPU_32_BIT
-      #error "SMOOTH_LIN_ADVANCE requires a 32-bit CPU."
-    #elif ENABLED(INPUT_SHAPING_E_SYNC) && NONE(INPUT_SHAPING_X, INPUT_SHAPING_Y)
-      #error "INPUT_SHAPING_E_SYNC requires INPUT_SHAPING_X or INPUT_SHAPING_Y."
-    #endif
-  #endif
-
-#endif // LIN_ADVANCE
+#endif
 
 /**
  * Nonlinear Extrusion requirements
@@ -1026,7 +1002,6 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
   #undef MPC_AUTOTUNE
   #undef MPC_EDIT_MENU
   #undef MPC_AUTOTUNE_MENU
-  #undef MPC_PTC
 #endif
 
 #if ENABLED(MPC_INCLUDE_FAN)
@@ -3377,19 +3352,19 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
       #error "SPI_ENDSTOPS requires stepper drivers with SPI support."
     #endif
   #else // !SPI_ENDSTOPS
-    // Stall detection DIAG = HIGH : TMC2209/2240
-    // Stall detection DIAG = LOW  : TMC2130/2160/2660/5130/5160
+    // Stall detection DIAG = HIGH : TMC2209
+    // Stall detection DIAG = LOW  : TMC2130/TMC2160/TMC2660/TMC5130/TMC5160
     #if X_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(X,TMC2209) || AXIS_DRIVER_TYPE(X,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(X,TMC2209)
       #if X_HOME_TO_MIN && X_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires X_MIN_ENDSTOP_HIT_STATE HIGH for X MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires X_MIN_ENDSTOP_HIT_STATE HIGH for X MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires X_MIN_ENDSTOP_HIT_STATE LOW for X MIN homing."
         #endif
       #elif X_HOME_TO_MAX && X_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires X_MAX_ENDSTOP_HIT_STATE HIGH for X MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires X_MAX_ENDSTOP_HIT_STATE HIGH for X MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires X_MAX_ENDSTOP_HIT_STATE LOW for X MAX homing."
         #endif
@@ -3398,16 +3373,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if Y_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(Y,TMC2209) || AXIS_DRIVER_TYPE(Y,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(Y,TMC2209)
       #if Y_HOME_TO_MIN && Y_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires Y_MIN_ENDSTOP_HIT_STATE HIGH for Y MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires Y_MIN_ENDSTOP_HIT_STATE HIGH for Y MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires Y_MIN_ENDSTOP_HIT_STATE LOW for Y MIN homing."
         #endif
       #elif Y_HOME_TO_MAX && Y_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires Y_MAX_ENDSTOP_HIT_STATE HIGH for Y MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires Y_MAX_ENDSTOP_HIT_STATE HIGH for Y MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires Y_MAX_ENDSTOP_HIT_STATE LOW for Y MAX homing."
         #endif
@@ -3416,16 +3391,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if Z_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(Z,TMC2209) || AXIS_DRIVER_TYPE(Z,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(Z,TMC2209)
       #if Z_HOME_TO_MIN && Z_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires Z_MIN_ENDSTOP_HIT_STATE HIGH for Z MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires Z_MIN_ENDSTOP_HIT_STATE HIGH for Z MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires Z_MIN_ENDSTOP_HIT_STATE LOW for Z MIN homing."
         #endif
       #elif Z_HOME_TO_MAX && Z_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires Z_MAX_ENDSTOP_HIT_STATE HIGH for Z MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires Z_MAX_ENDSTOP_HIT_STATE HIGH for Z MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires Z_MAX_ENDSTOP_HIT_STATE LOW for Z MAX homing."
         #endif
@@ -3434,16 +3409,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if I_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(I,TMC2209) || AXIS_DRIVER_TYPE(I,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(I,TMC2209)
       #if I_HOME_TO_MIN && I_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires I_MIN_ENDSTOP_HIT_STATE HIGH for I MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires I_MIN_ENDSTOP_HIT_STATE HIGH for I MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires I_MIN_ENDSTOP_HIT_STATE LOW for I MIN homing."
         #endif
       #elif I_HOME_TO_MAX && I_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires I_MAX_ENDSTOP_HIT_STATE HIGH for I MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires I_MAX_ENDSTOP_HIT_STATE HIGH for I MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires I_MAX_ENDSTOP_HIT_STATE LOW for I MAX homing."
         #endif
@@ -3452,16 +3427,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if J_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(J,TMC2209) || AXIS_DRIVER_TYPE(J,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(J,TMC2209)
       #if J_HOME_TO_MIN && J_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires J_MIN_ENDSTOP_HIT_STATE HIGH for J MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires J_MIN_ENDSTOP_HIT_STATE HIGH for J MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires J_MIN_ENDSTOP_HIT_STATE LOW for J MIN homing."
         #endif
       #elif J_HOME_TO_MAX && J_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires J_MAX_ENDSTOP_HIT_STATE HIGH for J MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires J_MAX_ENDSTOP_HIT_STATE HIGH for J MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires J_MAX_ENDSTOP_HIT_STATE LOW for J MAX homing."
         #endif
@@ -3470,16 +3445,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if K_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(K,TMC2209) || AXIS_DRIVER_TYPE(K,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(K,TMC2209)
       #if K_HOME_TO_MIN && K_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires K_MIN_ENDSTOP_HIT_STATE HIGH for K MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires K_MIN_ENDSTOP_HIT_STATE HIGH for K MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires K_MIN_ENDSTOP_HIT_STATE LOW for K MIN homing."
         #endif
       #elif K_HOME_TO_MAX && K_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires K_MAX_ENDSTOP_HIT_STATE HIGH for K MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires K_MAX_ENDSTOP_HIT_STATE HIGH for K MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires K_MAX_ENDSTOP_HIT_STATE LOW for K MAX homing."
         #endif
@@ -3488,16 +3463,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if U_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(U,TMC2209) || AXIS_DRIVER_TYPE(U,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(U,TMC2209)
       #if U_HOME_TO_MIN && U_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires U_MIN_ENDSTOP_HIT_STATE HIGH for U MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires U_MIN_ENDSTOP_HIT_STATE HIGH for U MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires U_MIN_ENDSTOP_HIT_STATE LOW for U MIN homing."
         #endif
       #elif U_HOME_TO_MAX && U_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires U_MAX_ENDSTOP_HIT_STATE HIGH for U MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires U_MAX_ENDSTOP_HIT_STATE HIGH for U MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires U_MAX_ENDSTOP_HIT_STATE LOW for U MAX homing."
         #endif
@@ -3506,16 +3481,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if V_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(V,TMC2209) || AXIS_DRIVER_TYPE(V,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(V,TMC2209)
       #if V_HOME_TO_MIN && V_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires V_MIN_ENDSTOP_HIT_STATE HIGH for V MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires V_MIN_ENDSTOP_HIT_STATE HIGH for V MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires V_MIN_ENDSTOP_HIT_STATE LOW for V MIN homing."
         #endif
       #elif V_HOME_TO_MAX && V_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires V_MAX_ENDSTOP_HIT_STATE HIGH for V MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires V_MAX_ENDSTOP_HIT_STATE HIGH for V MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires V_MAX_ENDSTOP_HIT_STATE LOW for V MAX homing."
         #endif
@@ -3524,16 +3499,16 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #endif
 
     #if W_SENSORLESS
-      #define _HIT_STATE (AXIS_DRIVER_TYPE(W,TMC2209) || AXIS_DRIVER_TYPE(W,TMC2240))
+      #define _HIT_STATE AXIS_DRIVER_TYPE(W,TMC2209)
       #if W_HOME_TO_MIN && W_MIN_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires W_MIN_ENDSTOP_HIT_STATE HIGH for W MIN homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires W_MIN_ENDSTOP_HIT_STATE HIGH for W MIN homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires W_MIN_ENDSTOP_HIT_STATE LOW for W MIN homing."
         #endif
       #elif W_HOME_TO_MAX && W_MAX_ENDSTOP_HIT_STATE != _HIT_STATE
         #if _HIT_STATE
-          #error "SENSORLESS_HOMING requires W_MAX_ENDSTOP_HIT_STATE HIGH for W MAX homing with TMC2209/2240."
+          #error "SENSORLESS_HOMING requires W_MAX_ENDSTOP_HIT_STATE HIGH for W MAX homing with TMC2209."
         #else
           #error "SENSORLESS_HOMING requires W_MAX_ENDSTOP_HIT_STATE LOW for W MAX homing."
         #endif
@@ -3630,11 +3605,11 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
 
 // Other TMC feature requirements
 #if ENABLED(SENSORLESS_HOMING) && !HAS_STALLGUARD
-  #error "SENSORLESS_HOMING requires TMC2130, TMC2160, TMC2209, TMC2240, TMC2660, or TMC5160 stepper drivers."
+  #error "SENSORLESS_HOMING requires TMC2130, TMC2160, TMC2209, TMC2660, or TMC5160 stepper drivers."
 #elif ENABLED(SENSORLESS_PROBING) && !HAS_STALLGUARD
-  #error "SENSORLESS_PROBING requires TMC2130, TMC2160, TMC2209, TMC2240, TMC2660, or TMC5160 stepper drivers."
+  #error "SENSORLESS_PROBING requires TMC2130, TMC2160, TMC2209, TMC2660, or TMC5160 stepper drivers."
 #elif STEALTHCHOP_ENABLED && !HAS_STEALTHCHOP
-  #error "STEALTHCHOP requires TMC2130, TMC2160, TMC2208, TMC2209, TMC2240, or TMC5160 stepper drivers."
+  #error "STEALTHCHOP requires TMC2130, TMC2160, TMC2208, TMC2209, or TMC5160 stepper drivers."
 #endif
 
 /**
@@ -3722,7 +3697,7 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
  * Check per-axis initializers for errors
  */
 
-#define __PLUS_TEST(I,A) && (sanity_arr_##A[ALIM(I,sanity_arr_##A)] > 0)
+#define __PLUS_TEST(I,A) && (sanity_arr_##A[_MIN(I,signed(COUNT(sanity_arr_##A)-1))] > 0)
 #define _PLUS_TEST(A) (1 REPEAT2(14,__PLUS_TEST,A))
 #if HAS_MULTI_EXTRUDER
   #define _EXTRA_NOTE " (Did you forget to enable DISTINCT_E_FACTORS?)"
@@ -3952,7 +3927,7 @@ static_assert(_PLUS_TEST(3), "DEFAULT_MAX_ACCELERATION values must be positive."
 
 #if HAS_USB_FLASH_DRIVE && DISABLED(USE_OTG_USB_HOST) && !PINS_EXIST(USB_CS, USB_INTR)
   #error "USB_CS_PIN and USB_INTR_PIN (or USE_OTG_USB_HOST) are required for USB_FLASH_DRIVE_SUPPORT."
-#elif ENABLED(USE_OTG_USB_HOST) && DISABLED(HAS_OTG_USB_HOST_SUPPORT)
+#elif ENABLED(USE_OTG_USB_HOST) && !defined(HAS_OTG_USB_HOST_SUPPORT)
   #error "The current board does not support USE_OTG_USB_HOST."
 #endif
 
