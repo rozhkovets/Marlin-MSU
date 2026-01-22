@@ -423,8 +423,11 @@
   #define MSU_DIRECT_DRIVE_SETUP //enable when using a direct-drive setup
   //#define MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP //enable when using a direct-drive setup using a single driver for both the MSU and the extruder
 
-  #define MSU_MENU  //LCD Menu
-
+  #define MSU_MENU  //Screen Menu
+  #if ENABLED(MSU_MENU)
+    #define MSU_MESSAGES //Screen info messages
+  #endif
+  
   #define MSU_SERVO_IDLER_NBR 1 //define the servo motor number
   //#define MSU_SERVO_OFFSET 0 //defines the offset in degrees for the idler, this can be used to fine tune idler alignment
   /*
@@ -444,7 +447,8 @@
   #if ENABLED(MSU_DIRECT_DRIVE_SETUP)
     #define MSU_ORIGINAL_EXTRUDER_NBR 0//define the extruder nbr that the actual extruder is connected to
     #define MSU_DIRECT_DRIVE_BOTH_LOAD_MM 80 //длина загрузка двумя экструдерами
-    #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 12 // MSU_SPEED // скорость загрузки двумя экструдерами
+    #define MSU_DIRECT_DRIVE_BOTH_LOAD_STEP 0.5// шаг загрузки двумя экструдерами (max 1)
+    #define MSU_DIRECT_DRIVE_BOTH_LOAD_SPEED 6 // скорость загрузки двумя экструдерами
   #endif
 
   #if ENABLED(MSU_DIRECT_DRIVE_LINKED_EXTRUDER_SETUP)
@@ -488,7 +492,7 @@
       #endif
     #endif
 
-  #define MSU_LCD_MESSAGES //via M117
+  
   //Если используется датчик наличия филамента, его необходимо выключить при замене, иначе его срабатываение во время замены вызовет паузу после замены
   #define MSU_ON_OFF_RUNOUT_SENSOR //выключает датчик филамента на время замены, если он включен
   #define MSU_RUNOUT_SENSOR_ON_GCODE  "M412 S1"
@@ -808,9 +812,9 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    #define DEFAULT_Kp  20.64
-    #define DEFAULT_Ki   1.72
-    #define DEFAULT_Kd  61.92
+    #define DEFAULT_Kp  18.96
+    #define DEFAULT_Ki   1.56
+    #define DEFAULT_Kd  57.64
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
